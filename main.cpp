@@ -4,11 +4,14 @@
 #include "vec.h"
 #include "mat.h"
 
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <fstream>
+#include <string>
+
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.01;
-
-vec3 points[6];
-vec3 colors[6];
 
 vec4 cameraPos;
 vec3 cameraRot;
@@ -20,17 +23,106 @@ mat4 transformation;
 
 GLuint matLoc;
 
+int numVertices = 0;
+
 float sensitivity = 0.1;
 
 bool forward, backward;
-bool left, right;
+bool strafeL, strafeR;
 bool up, down;
 
-void
-init( void )
+using namespace std;
+
+void load_obj(const char* filename, vector<vec4> &vertices,
+			  vector<vec3> &normals, vector<GLushort> &elements)
 {
+	ifstream in(filename, ios::in);
+
+	if (!in)
+	{
+		cerr << "Cannot open " << filename << endl;
+		exit(1);
+	}
+
+	string line;
+
+	while (getline(in, line))
+	{
+		if (line.substr(0, 2) == "v ")
+		{
+			istringstream s(line.substr(2));
+			vec4 v;
+			s >> v.x;
+			s >> v.y;
+			s >> v.z;
+			v.w = 1.0;
+
+			vertices.push_back(v);
+		}
+		else if (line.substr(0, 2) == "f ")
+		{
+			istringstream s(line.substr(2));
+			GLushort a, b, c, d;
+			s >> a;
+			s >> b;
+			s >> c;
+			s >> d;
+			a--;
+			b--;
+			c--;
+
+			elements.push_back(a);
+			elements.push_back(b);
+			elements.push_back(c);
+		}
+		else if (line[0] == '#') { /* ignore comments */ }
+		else { /* blank/junk */ }
+	}
+
+	normals.resize(vertices.size(), vec3(0.0, 0.0, 0.0));
+
+	for (int i = 0; i < elements.size(); i += 3)
+	{
+		GLushort ia = elements[i];
+		GLushort ib = elements[i + 1];
+		GLushort ic = elements[i + 2];
+
+		vec4 normal = normalize(cross(
+							vec4(vertices[ib]) - vec4(vertices[ia]),
+							vec4(vertices[ic]) - vec4(vertices[ia])));
+
+		normals[ia].x = normals[ib].x = normals[ic].x = normal.x;
+		normals[ia].y = normals[ib].y = normals[ic].y = normal.y;
+		normals[ia].z = normals[ib].z = normals[ic].z = normal.z;
+	}
+}
+
+void init( void )
+{
+	vector<vec4> raw_vertices;
+	vector<vec4> vertices;
+	vector<vec3> normals;
+	vector<GLushort> elements;
+	vector<vec3> colors;
+
+	load_obj("models/suzanne.obj", raw_vertices, normals, elements);
+
+	for (int i = 0; i < elements.size(); i++)
+	{
+		vertices.push_back(raw_vertices[elements[i]]);
+	}
+	
+	numVertices = vertices.size();
+
+	colors.resize(vertices.size());
+	
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		colors[i] = vec3(0.5, 0.5, 0.5);
+	}
+
     forward = backward = false;
-    left = right = false;
+    strafeL = strafeR = false;
     up = down = false;
 
     cameraPos = 0;
@@ -41,19 +133,6 @@ init( void )
 
     transformation = *new mat4();
 
-    // add in plane
-    points[0] = vec3(1.0, 1.0, 0.3335);
-    points[1] = vec3(1.0, -1.0, 0.3335);
-    points[2] = vec3(-1.0, -1.0, 0.3335);
-    points[3] = points[2];
-    points[4] = vec3(-1.0, 1.0, 0.3335);
-    points[5] = points[0];
-
-    for (int i = 0; i < 6; i++)
-    {
-      colors[i] = vec3(0.0, 0.5, 0.0);
-    }
-
     // Create a vertex array object
     GLuint vao;
     glGenVertexArrays( 1, &vao );
@@ -63,10 +142,10 @@ init( void )
     GLuint buffer;
     glGenBuffers( 1, &buffer );
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
-
-    // First, we create an empty buffer of the size we need by passing
+    
+	// First, we create an empty buffer of the size we need by passing
     //   a NULL pointer for the data values
-    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors),
+    glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
 		  NULL, GL_STATIC_DRAW );
 
     // Next, we load the real data in parts.  We need to specify the
@@ -74,17 +153,17 @@ init( void )
     //   data in the buffer.  Conveniently, the byte offset we need is
     //   the same as the size (in bytes) of the points array, which is
     //   returned from "sizeof(points)".
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec4) * vertices.size(), &vertices[0]);
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), 
+					sizeof(vec3) * colors.size(), &colors[0]);
 
     // Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
-    glUseProgram( program );
+	glUseProgram(program);
 
-    // Initialize the vertex position attribute from the vertex shader    
-    GLuint vPosition = glGetAttribLocation( program, "vPosition" );
+	GLuint vPosition = glGetAttribLocation(program, "vPosition");
     glEnableVertexAttribArray( vPosition );
-    glVertexAttribPointer( vPosition, 3, GL_FLOAT, GL_FALSE, 0,
+    glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(0) );
 
     // Likewise, initialize the vertex color attribute.  Once again, we
@@ -94,13 +173,13 @@ init( void )
     GLuint vColor = glGetAttribLocation( program, "vColor" );
     glEnableVertexAttribArray( vColor );
     glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(sizeof(points)) );
+                           BUFFER_OFFSET(sizeof(vec4) * vertices.size()) );
 
     matLoc = glGetUniformLocation(program, "m");
 
     glEnable( GL_DEPTH_TEST );
 
-    glClearColor( 0.0, 0.0, 0.0, 1.0 ); /* white background */
+    glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
 }
 //----------------------------------------------------------------------------
 
@@ -122,10 +201,9 @@ display( void )
   transformation = transformation * Perspective(60, 1.0, 0.01, 100);      
   transformation = transformation * RotateX(cameraRot.x) * RotateY(cameraRot.y);
   transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
-  transformation = transformation * RotateX(90);
-  
+
   glUniformMatrix4fv(matLoc, 1, true, transformation);
-  glDrawArrays( GL_TRIANGLES, 0, 6);
+  glDrawArrays( GL_LINES, 0, numVertices);
   glFlush();
 }
 
@@ -145,10 +223,10 @@ keyboard( unsigned char key, int x, int y )
     backward = true;
     break;
   case 'd':
-    right = true;
+    strafeR = true;
     break;
   case 'a':
-    left = true;
+    strafeL = true;
     break;
   case 'r':
     up = true;
@@ -170,10 +248,10 @@ void keyboardUp(unsigned char key, int x, int y)
     backward = false;
     break;
   case 'd':
-    right = false;
+    strafeR = false;
     break;
   case 'a':
-    left = false;
+    strafeL = false;
     break;
   case 'r':
     up = false;
@@ -233,11 +311,11 @@ void idle()
   {
     cameraVel.z = 0;
   }
-  if (left)
+  if (strafeL)
   {
     cameraVel.x = MOVEMENT_SPEED;
   }
-  else if (right)
+  else if (strafeR)
   {
     cameraVel.x = -MOVEMENT_SPEED;
   }

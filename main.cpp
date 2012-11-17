@@ -79,8 +79,8 @@ void load_obj(const char* filename, vector<vec4> &vertices,
 
 	normals.resize(vertices.size(), vec3(0.0, 0.0, 0.0));
 
-	for (int i = 0; i < elements.size(); i += 3)
-	{
+	for (int i = 0; i < elements.size(); i += 3) 
+	  {
 		GLushort ia = elements[i];
 		GLushort ib = elements[i + 1];
 		GLushort ic = elements[i + 2];

@@ -191,8 +191,6 @@ display( void )
   transformation = transformation  * RotateY(-cameraRot.y) * RotateX(-cameraRot.x);
   cameraPos = cameraPos + transformation * cameraVel;
 
-  glutSolidTeapot(1);
-
   // build the transformation matrix
   transformation = identity();
 

@@ -97,100 +97,99 @@ void load_obj(const char* filename, vector<vec4> &vertices,
 
 void init( void )
 {
-	vector<vec4> raw_vertices;
-	vector<vec4> vertices;
-	vector<vec3> normals;
-	vector<GLushort> elements;
-	vector<vec3> colors;
-
-	load_obj("models/suzanne.obj", raw_vertices, normals, elements);
-
-	for (int i = 0; i < elements.size(); i++)
-	{
-		vertices.push_back(raw_vertices[elements[i]]);
-	}
-	
-	numVertices = vertices.size();
-
-	colors.resize(vertices.size());
-	
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		colors[i] = vec3(0.5, 0.5, 0.5);
-	}
-
-    forward = backward = false;
-    strafeL = strafeR = false;
-    up = down = false;
-
-    cameraPos = 0;
-    cameraPos.z = -4;
-    cameraRot = 0;
-
-    mouseCenter = -1;
-
-    transformation = *new mat4();
-
-    // Create a vertex array object
-    GLuint vao;
-    glGenVertexArrays( 1, &vao );
-    glBindVertexArray( vao );
-
-    // Create and initialize a buffer object
-    GLuint buffer;
-    glGenBuffers( 1, &buffer );
-    glBindBuffer( GL_ARRAY_BUFFER, buffer );
-    
-	// First, we create an empty buffer of the size we need by passing
-    //   a NULL pointer for the data values
-    glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
-		  NULL, GL_STATIC_DRAW );
-
-    // Next, we load the real data in parts.  We need to specify the
-    //   correct byte offset for placing the color data after the point
-    //   data in the buffer.  Conveniently, the byte offset we need is
-    //   the same as the size (in bytes) of the points array, which is
-    //   returned from "sizeof(points)".
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec4) * vertices.size(), &vertices[0]);
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), 
-					sizeof(vec3) * colors.size(), &colors[0]);
-
-    // Load shaders and use the resulting shader program
-    GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
-	glUseProgram(program);
-
-	GLuint vPosition = glGetAttribLocation(program, "vPosition");
-    glEnableVertexAttribArray( vPosition );
-    glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(0) );
-
-    // Likewise, initialize the vertex color attribute.  Once again, we
-    //    need to specify the starting offset (in bytes) for the color
-    //    data.  Just like loading the array, we use "sizeof(points)"
-    //    to determine the correct value.
-    GLuint vColor = glGetAttribLocation( program, "vColor" );
-    glEnableVertexAttribArray( vColor );
-    glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(sizeof(vec4) * vertices.size()) );
-
-    matLoc = glGetUniformLocation(program, "m");
-
-    glEnable( GL_DEPTH_TEST );
-
-    glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
+  vector<vec4> raw_vertices;
+  vector<vec4> vertices;
+  vector<vec3> normals;
+  vector<GLushort> elements;
+  vector<vec3> colors;
+  
+  load_obj("models/suzanne.obj", raw_vertices, normals, elements);
+  
+  for (int i = 0; i < elements.size(); i++)
+    {
+      vertices.push_back(raw_vertices[elements[i]]);
+    }
+  
+  numVertices = vertices.size();
+  
+  colors.resize(vertices.size());
+  
+  for (int i = 0; i < vertices.size(); i++)
+    {
+      colors[i] = vec3(0.5, 0.5, 0.5);
+    }
+  
+  forward = backward = false;
+  strafeL = strafeR = false;
+  up = down = false;
+  
+  cameraPos = 0;
+  cameraPos.z = -4;
+  cameraRot = 0;
+  
+  mouseCenter = -1;
+  
+  transformation = *new mat4();
+  
+  // Create a vertex array object
+  GLuint vao;
+  glGenVertexArrays( 1, &vao );
+  glBindVertexArray( vao );
+  
+  // Create and initialize a buffer object
+  GLuint buffer;
+  glGenBuffers( 1, &buffer );
+  glBindBuffer( GL_ARRAY_BUFFER, buffer );
+  
+  // First, we create an empty buffer of the size we need by passing
+  //   a NULL pointer for the data values
+  glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
+		NULL, GL_STATIC_DRAW );
+  
+  // Next, we load the real data in parts.  We need to specify the
+  //   correct byte offset for placing the color data after the point
+  //   data in the buffer.  Conveniently, the byte offset we need is
+  //   the same as the size (in bytes) of the points array, which is
+  //   returned from "sizeof(points)".
+  glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec4) * vertices.size(), &vertices[0]);
+  glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), 
+		   sizeof(vec3) * colors.size(), &colors[0]);
+  
+  // Load shaders and use the resulting shader program
+  GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
+  glUseProgram(program);
+  
+  GLuint vPosition = glGetAttribLocation(program, "vPosition");
+  glEnableVertexAttribArray( vPosition );
+  glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
+			 BUFFER_OFFSET(0) );
+  
+  // Likewise, initialize the vertex color attribute.  Once again, we
+  //    need to specify the starting offset (in bytes) for the color
+  //    data.  Just like loading the array, we use "sizeof(points)"
+  //    to determine the correct value.
+  GLuint vColor = glGetAttribLocation( program, "vColor" );
+  glEnableVertexAttribArray( vColor );
+  glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
+			 BUFFER_OFFSET(sizeof(vec4) * vertices.size()) );
+  
+  matLoc = glGetUniformLocation(program, "m");
+  
+  glEnable( GL_DEPTH_TEST );
+  
+  glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
 }
-//----------------------------------------------------------------------------
 
 void
 display( void )
 {
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+  
   // transform the camera position based on the rotation and the velocity
   transformation = identity();
   transformation = transformation  * RotateY(-cameraRot.y) * RotateX(-cameraRot.x);
   cameraPos = cameraPos + transformation * cameraVel;
-
+  
   // build the transformation matrix
   transformation = identity();
 
@@ -346,8 +345,7 @@ int
 main( int argc, char **argv )
 {
     glutInit( &argc, argv );
-    glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_SINGLE);
-    glEnable(GL_DEPTH_TEST);
+    glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_SINGLE );
     glutInitWindowSize( 512, 512 );
     glutCreateWindow( "Flyby" );
     init();

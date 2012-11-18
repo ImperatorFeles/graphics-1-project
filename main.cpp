@@ -15,6 +15,8 @@ vec4 cameraPos;
 vec3 cameraRot;
 vec4 cameraVel;
 
+vec4 lightPos;
+
 vec2 mouseCenter;
 
 mat4 transformation;
@@ -30,6 +32,29 @@ bool strafeL, strafeR;
 bool up, down;
 
 using namespace std;
+
+void initLights( void ) {
+
+  lightPos = vec4( 0.0, -0.5, 0.5, 1.0 );
+
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glEnable(GL_NORMALIZE);
+
+  // -------------------------------------------                                                
+  // Lighting parameters:                                                                       
+
+  GLfloat light_pos[] = {lightPos.x, lightPos.y, lightPos.z, lightPos.w};
+  GLfloat light_Ka[]  = {0.2f, 0.2f, 0.2f, 1.0f};
+  GLfloat light_Kd[]  = {1.0f, 1.0f, 1.0f, 1.0f};
+  GLfloat light_Ks[]  = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+  glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_Ks);
+
+}
 
 void load_obj(const char* filename, vector<vec4> &vertices,
 			  vector<vec3> &normals, vector<GLushort> &elements)
@@ -104,6 +129,9 @@ void init( void )
   vector<vec3> colors;
   
   load_obj("models/suzanne.obj", raw_vertices, normals, elements);
+  //  load_obj("models/flashlight.obj", raw_vertices, normals, elements);
+
+  initLights();
   
   for (int i = 0; i < elements.size(); i++)
     {
@@ -116,7 +144,7 @@ void init( void )
   
   for (int i = 0; i < vertices.size(); i++)
     {
-      colors[i] = vec3(0.5, 0.5, 0.5);
+      colors[i] = vec3(1.0, 0.5, 0.5);
     }
   
   forward = backward = false;
@@ -143,8 +171,8 @@ void init( void )
   
   // First, we create an empty buffer of the size we need by passing
   //   a NULL pointer for the data values
-  glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
-		NULL, GL_STATIC_DRAW );
+  glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() 
+		+ sizeof(vec3) * normals.size(), NULL, GL_STATIC_DRAW );
   
   // Next, we load the real data in parts.  We need to specify the
   //   correct byte offset for placing the color data after the point
@@ -154,6 +182,8 @@ void init( void )
   glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec4) * vertices.size(), &vertices[0]);
   glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), 
 		   sizeof(vec3) * colors.size(), &colors[0]);
+  glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
+		   sizeof(vec3) * normals.size(), &normals[0]);
   
   // Load shaders and use the resulting shader program
   GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
@@ -172,6 +202,11 @@ void init( void )
   glEnableVertexAttribArray( vColor );
   glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
 			 BUFFER_OFFSET(sizeof(vec4) * vertices.size()) );
+
+  GLuint vNormal = glGetAttribLocation( program, "vNormal" );
+  glEnableVertexAttribArray( vNormal );
+  glVertexAttribPointer( vNormal, 3, GL_FLOAT, GL_FALSE, 0,
+			 BUFFER_OFFSET(sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size()) );
   
   matLoc = glGetUniformLocation(program, "m");
   
@@ -198,7 +233,7 @@ display( void )
   transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
 
   glUniformMatrix4fv(matLoc, 1, true, transformation);
-  glDrawArrays( GL_LINES, 0, numVertices);
+  glDrawArrays( GL_TRIANGLES, 0, numVertices);
   glFlush();
 }
 

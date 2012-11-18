@@ -16,6 +16,7 @@ vec3 cameraRot;
 vec4 cameraVel;
 
 vec4 lightPos;
+int lightDir = 0; //0 is left, 1 is right
 
 vec2 mouseCenter;
 
@@ -371,6 +372,19 @@ void idle()
   {
     cameraRot.y -= 360;
   }
+
+  if( lightDir == 0 ) {
+    lightPos.x -= 0.005;
+  } else {
+    lightPos.x += 0.005;
+  }
+  if( lightPos.x < -3.0 ) {
+    lightDir = 1;
+  } else if( lightPos.x > 3.0 ) {
+    lightDir = 0;
+  }
+  GLfloat light_pos[] = {lightPos.x, lightPos.y, lightPos.z, lightPos.w};
+  glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
   glutPostRedisplay(); 
 }

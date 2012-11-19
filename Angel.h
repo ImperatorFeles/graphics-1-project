@@ -43,10 +43,11 @@
 #include <GLUT/glut.h>
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
+#elif _WIN32
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+#include <GL/freeglut_ext.h>
 #else
-#ifdef _WIN32
-#include <windows.h>
-#endif
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>

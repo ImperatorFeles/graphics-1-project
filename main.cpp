@@ -28,7 +28,7 @@ int numVertices = 0;
 
 float sensitivity = 0.1;
 
-bool forward, backward;
+bool forward_, backward;
 bool strafeL, strafeR;
 bool up, down;
 
@@ -148,7 +148,7 @@ void init( void )
       colors[i] = vec3(1.0, 0.5, 0.5);
     }
   
-  forward = backward = false;
+  forward_ = backward = false;
   strafeL = strafeR = false;
   up = down = false;
   
@@ -222,12 +222,12 @@ display( void )
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
   
   // transform the camera position based on the rotation and the velocity
-  transformation = identity();
+  transformation = Angel::identity();
   transformation = transformation  * RotateY(-cameraRot.y) * RotateX(-cameraRot.x);
   cameraPos = cameraPos + transformation * cameraVel;
   
   // build the transformation matrix
-  transformation = identity();
+  transformation = Angel::identity();
 
   transformation = transformation * Perspective(60, 1.0, 0.01, 100);      
   transformation = transformation * RotateX(cameraRot.x) * RotateY(cameraRot.y);
@@ -248,7 +248,7 @@ keyboard( unsigned char key, int x, int y )
     exit( EXIT_SUCCESS );
     break;
   case 'w':
-    forward = true;
+    forward_ = true;
     break;
   case 's':
     backward = true;
@@ -273,7 +273,7 @@ void keyboardUp(unsigned char key, int x, int y)
   switch (key)
   {
   case 'w':
-    forward = false;
+    forward_ = false;
     break;
   case 's':
     backward = false;
@@ -297,7 +297,7 @@ void mouse(int button, int state, int x, int y)
 {
   if (button == GLUT_LEFT_BUTTON)
   {
-    forward = button == GLUT_DOWN;
+    forward_ = button == GLUT_DOWN;
   }
   else if (button == GLUT_RIGHT_BUTTON)
   {
@@ -330,7 +330,7 @@ void motion(int x, int y)
 void idle()
 {
   // set the velocity based on which direction we're going
-  if (forward)
+  if (forward_)
   {
     cameraVel.z = MOVEMENT_SPEED;
   }

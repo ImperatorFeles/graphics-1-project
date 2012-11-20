@@ -75,51 +75,44 @@ void load_obj(const char* filename, vector<vec4> &vertices,
 	{
 		if (line.substr(0, 2) == "v ")
 		{
-			istringstream s(line.substr(2));
-			vec4 v;
-			s >> v.x;
-			s >> v.y;
-			s >> v.z;
-			v.w = 1.0;
-
-			vertices.push_back(v);
+		  istringstream s(line.substr(2));
+		  vec4 v;
+		  s >> v.x;
+		  s >> v.y;
+		  s >> v.z;
+		  v.w = 1.0;
+		  
+		  vertices.push_back(v);
 		}
 		else if (line.substr(0, 2) == "f ")
 		{
-			istringstream s(line.substr(2));
-			GLushort a, b, c, d;
-			s >> a;
-			s >> b;
-			s >> c;
-			s >> d;
-			a--;
-			b--;
-			c--;
-
-			elements.push_back(a);
-			elements.push_back(b);
-			elements.push_back(c);
+		  istringstream s(line.substr(2));
+		  GLushort a, b, c, d;
+		  s >> a;
+		  s >> b;
+		  s >> c;
+		  s >> d;
+		  a--;
+		  b--;
+		  c--;
+		  
+		  elements.push_back(a);
+		  elements.push_back(b);
+		  elements.push_back(c);
+		}
+		else if (line.substr(0, 3) == "vn ") {
+		  istringstream s(line.substr(3));
+		  vec3 vn;
+		  s >> vn.x;
+		  s >> vn.y;
+		  s >> vn.z;
+		  
+		  normals.push_back(vn);
 		}
 		else if (line[0] == '#') { /* ignore comments */ }
 		else { /* blank/junk */ }
 	}
 
-	normals.resize(vertices.size(), vec3(0.0, 0.0, 0.0));
-
-	for (int i = 0; i < elements.size(); i += 3) 
-	  {
-		GLushort ia = elements[i];
-		GLushort ib = elements[i + 1];
-		GLushort ic = elements[i + 2];
-
-		vec4 normal = normalize(cross(
-							vec4(vertices[ib]) - vec4(vertices[ia]),
-							vec4(vertices[ic]) - vec4(vertices[ia])));
-
-		normals[ia].x = normals[ib].x = normals[ic].x = normal.x;
-		normals[ia].y = normals[ib].y = normals[ic].y = normal.y;
-		normals[ia].z = normals[ib].z = normals[ic].z = normal.z;
-	}
 }
 
 void init( void )
@@ -132,6 +125,8 @@ void init( void )
   
   load_obj("models/suzanne.obj", raw_vertices, normals, elements);
   //  load_obj("models/flashlight.obj", raw_vertices, normals, elements);
+
+  cout << normals.size() << endl;
 
   initLights();
   

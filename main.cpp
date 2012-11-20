@@ -66,7 +66,7 @@ void initLights( void ) {
 
   GLfloat light_pos[] = {lightPos.x, lightPos.y, lightPos.z, lightPos.w};
   GLfloat light_Ka[]  = {0.2f, 0.2f, 0.2f, 1.0f};
-  GLfloat light_Kd[]  = {1.0f, 1.0f, 1.0f, 1.0f};
+  GLfloat light_Kd[]  = {0.5f, 1.0f, 0.5f, 1.0f};
   GLfloat light_Ks[]  = {1.0f, 1.0f, 1.0f, 1.0f};
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
@@ -144,8 +144,7 @@ void init( void )
   vector<GLushort> n_elements;
   vector<vec3> colors;
   
-  load_obj("models/suzanne.obj", raw_vertices, raw_normals, v_elements, n_elements);
-  //  load_obj("models/flashlight.obj", raw_vertices, normals, elements);
+  load_obj("models/monkeyrobot.obj", raw_vertices, raw_normals, v_elements, n_elements);
 
   initLights();
 
@@ -165,7 +164,7 @@ void init( void )
   
   for (unsigned int i = 0; i < vertices.size(); i++)
     {
-      colors[i] = vec3(1.0, 0.5, 0.5);
+      colors[i] = vec3(1.0, 1.0, 1.0);
     }
 
   forward_ = backward = false;
@@ -233,7 +232,7 @@ void init( void )
   
   glEnable( GL_DEPTH_TEST );
   
-  glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
+  glClearColor( 0.0, 0.0, 0.0, 1.0 ); /* white background */
 }
 
 void
@@ -311,19 +310,6 @@ void keyboardUp(unsigned char key, int x, int y)
     down = false;
     break;
   }
-}
-
-void mouse(int button, int state, int x, int y)
-{
-  if (button == GLUT_LEFT_BUTTON)
-  {
-    forward_ = button == GLUT_DOWN;
-  }
-  else if (button == GLUT_RIGHT_BUTTON)
-  {
-    backward = button == GLUT_DOWN;
-  }
-      
 }
 
 void passiveMotion(int x, int y)
@@ -422,7 +408,6 @@ main( int argc, char **argv )
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
     glutKeyboardUpFunc(keyboardUp);
-    glutMouseFunc(mouse);
     glutIdleFunc(idle);
     glutMotionFunc(motion);
     glutPassiveMotionFunc(passiveMotion);

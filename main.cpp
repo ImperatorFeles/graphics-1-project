@@ -77,7 +77,8 @@ void initLights( void ) {
 }
 
 void load_obj(const char* filename, vector<vec4> &vertices,
-			  vector<vec3> &normals, vector<GLushort> &elements)
+			  vector<vec3> &normals, vector<GLushort> &v_elements,
+			  vector<GLushort> &n_elements)
 {
 	ifstream in(filename, ios::in);
 
@@ -110,9 +111,13 @@ void load_obj(const char* filename, vector<vec4> &vertices,
 		  s >> b;
 		  s >> c;
 
-		  elements.push_back(atoi(split(a, '/')[0].c_str()));
-		  elements.push_back(atoi(split(b, '/')[0].c_str()));
-		  elements.push_back(atoi(split(c, '/')[0].c_str()));
+		  v_elements.push_back(atoi(split(a, '/')[0].c_str()));
+		  v_elements.push_back(atoi(split(b, '/')[0].c_str()));
+		  v_elements.push_back(atoi(split(c, '/')[0].c_str()));
+
+		  n_elements.push_back(atoi(split(a, '/')[2].c_str()));
+		  n_elements.push_back(atoi(split(b, '/')[2].c_str()));
+		  n_elements.push_back(atoi(split(c, '/')[2].c_str()));
 		}
 		else if (line.substr(0, 3) == "vn ") {
 		  istringstream s(line.substr(3));
@@ -134,18 +139,25 @@ void init( void )
   vector<vec4> raw_vertices;
   vector<vec4> vertices;
   vector<vec3> normals;
-  vector<GLushort> elements;
+  vector<vec3> raw_normals;
+  vector<GLushort> v_elements;
+  vector<GLushort> n_elements;
   vector<vec3> colors;
   
-  load_obj("models/suzanne.obj", raw_vertices, normals, elements);
+  load_obj("models/suzanne.obj", raw_vertices, raw_normals, v_elements, n_elements);
   //  load_obj("models/flashlight.obj", raw_vertices, normals, elements);
 
   initLights();
 
-  for (unsigned int i = 0; i < elements.size(); i++)
+  for (unsigned int i = 0; i < v_elements.size(); i++)
     {
-      vertices.push_back(raw_vertices[elements[i]]);
+      vertices.push_back(raw_vertices[v_elements[i] - 1]);
     }
+
+  for (unsigned int i = 0; i < n_elements.size(); i++)
+  {
+	normals.push_back(raw_normals[n_elements[i] - 1]);
+  }
   
   numVertices = vertices.size();
   
@@ -155,7 +167,6 @@ void init( void )
     {
       colors[i] = vec3(1.0, 0.5, 0.5);
     }
-  
 
   forward_ = backward = false;
   strafeL = strafeR = false;
@@ -243,9 +254,7 @@ display( void )
   transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
 
   glUniformMatrix4fv(matLoc, 1, true, transformation);
-  cout << "test" << endl;
   glDrawArrays( GL_TRIANGLES, 0, numVertices);
-  cout << "test2" << endl;
   glFlush();
 }
 

@@ -35,6 +35,24 @@ bool up, down;
 
 using namespace std;
 
+vector<string> split(string str, char delim)
+{
+	vector<string> *elements = new vector<string>();
+
+	while (str.find_first_of(delim) != string::npos)
+	{
+		int pos = str.find_first_of(delim);
+
+		elements->push_back(str.substr(0, pos));
+
+		str = str.substr(pos + 1);
+	}
+
+	elements->push_back(str);
+
+	return *elements;
+}
+
 void initLights( void ) {
 
   lightPos = vec4( 0.0, -0.5, 0.5, 1.0 );
@@ -87,18 +105,14 @@ void load_obj(const char* filename, vector<vec4> &vertices,
 		else if (line.substr(0, 2) == "f ")
 		{
 		  istringstream s(line.substr(2));
-		  GLushort a, b, c, d;
+		  string a, b, c;
 		  s >> a;
 		  s >> b;
 		  s >> c;
-		  s >> d;
-		  a--;
-		  b--;
-		  c--;
-		  
-		  elements.push_back(a);
-		  elements.push_back(b);
-		  elements.push_back(c);
+
+		  elements.push_back(atoi(split(a, '/')[0].c_str()));
+		  elements.push_back(atoi(split(b, '/')[0].c_str()));
+		  elements.push_back(atoi(split(c, '/')[0].c_str()));
 		}
 		else if (line.substr(0, 3) == "vn ") {
 		  istringstream s(line.substr(3));
@@ -126,11 +140,9 @@ void init( void )
   load_obj("models/suzanne.obj", raw_vertices, normals, elements);
   //  load_obj("models/flashlight.obj", raw_vertices, normals, elements);
 
-  cout << normals.size() << endl;
-
   initLights();
-  
-  for (int i = 0; i < elements.size(); i++)
+
+  for (unsigned int i = 0; i < elements.size(); i++)
     {
       vertices.push_back(raw_vertices[elements[i]]);
     }
@@ -139,11 +151,12 @@ void init( void )
   
   colors.resize(vertices.size());
   
-  for (int i = 0; i < vertices.size(); i++)
+  for (unsigned int i = 0; i < vertices.size(); i++)
     {
       colors[i] = vec3(1.0, 0.5, 0.5);
     }
   
+
   forward_ = backward = false;
   strafeL = strafeR = false;
   up = down = false;
@@ -230,7 +243,9 @@ display( void )
   transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
 
   glUniformMatrix4fv(matLoc, 1, true, transformation);
+  cout << "test" << endl;
   glDrawArrays( GL_TRIANGLES, 0, numVertices);
+  cout << "test2" << endl;
   glFlush();
 }
 

@@ -17,6 +17,7 @@ vec4 cameraVel;
 
 vec4 lightPos;
 int lightDir = 0; //0 is left, 1 is right
+float lightSpeed = 0.005;
 
 vec2 mouseCenter;
 
@@ -374,9 +375,9 @@ void idle()
   }
 
   if( lightDir == 0 ) {
-    lightPos.x -= 0.005;
+    lightPos.x -= lightSpeed;
   } else {
-    lightPos.x += 0.005;
+    lightPos.x += lightSpeed;
   }
   if( lightPos.x < -3.0 ) {
     lightDir = 1;

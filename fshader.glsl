@@ -1,9 +1,9 @@
 
-varying  vec4 color;
-varying float diffuse_value;
+varying vec4 color;
+varying vec4 lightDiff;
 
 void
 main()
 {
-    gl_FragColor = color * diffuse_value;
+    gl_FragColor = color * lightDiff;
 }

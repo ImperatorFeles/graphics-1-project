@@ -18,7 +18,7 @@ vec4 cameraVel;
 vec4 lightPos0;
 vec4 lightPos1;
 int lightDir = 0; //0 is left, 1 is right
-float lightSpeed = 0.04;
+float lightSpeed = 0.04; //Speed of light0 oscillation
 
 vec2 mouseCenter;
 
@@ -36,6 +36,10 @@ bool up, down;
 
 using namespace std;
 
+/*
+  Basic function to split strings over a delimiter
+  used in model parsing
+*/
 vector<string> split(string str, char delim)
 {
 	vector<string> *elements = new vector<string>();
@@ -54,8 +58,13 @@ vector<string> split(string str, char delim)
 	return *elements;
 }
 
+/*
+  Initialize lights for the scene
+  Defines initial positions and colors
+*/
 void initLights( void ) {
 
+  //Initial positions
   lightPos0 = vec4( 0.0, -2.0, 0.4, 1.0 );
   lightPos1 = vec4( 0.0, 0.25, 0.2, 1.0 );
   
@@ -64,14 +73,13 @@ void initLights( void ) {
   glEnable(GL_LIGHT1);
   glEnable(GL_NORMALIZE);
 
-  // -------------------------------------------                                                
-  // Lighting parameters:                                                                       
-
+  //Put things into the right format for the shader
   GLfloat light_pos0[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
   GLfloat light_pos1[] = {lightPos1.x, lightPos1.y, lightPos1.z, lightPos1.w};
   GLfloat light_Kd[]  = {0.5f, 1.0f, 0.5f, 1.0f};
   GLfloat light_Kd1[] = {0.5f, 0.5f, 1.0f, 1.0f};
 
+  //Send lighting information to the GPU
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos0);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
   glLightfv(GL_LIGHT1, GL_POSITION, light_pos1);
@@ -79,6 +87,11 @@ void initLights( void ) {
 
 }
 
+/*
+  .obj model loader
+  models must be triangulated, and have normals included to be
+  correctly parsed
+*/
 void load_obj(const char* filename, vector<vec4> &vertices,
 			  vector<vec3> &normals, vector<GLushort> &v_elements,
 			  vector<GLushort> &n_elements)
@@ -150,21 +163,22 @@ void init( void )
   load_obj("models/monkeyrobot.obj", raw_vertices, raw_normals, v_elements, n_elements);
 
   initLights();
-
+  
+  //push vertices obtained from the model loader in the order specified in the .obj elements section
   for (unsigned int i = 0; i < v_elements.size(); i++)
     {
       vertices.push_back(raw_vertices[v_elements[i] - 1]);
     }
-
-  for (unsigned int i = 0; i < n_elements.size(); i++)
-  {
-	normals.push_back(raw_normals[n_elements[i] - 1]);
-  }
-  
   numVertices = vertices.size();
+
+  //push normals obtained from the model loader in the order specified in the .obj elements section
+  for (unsigned int i = 0; i < n_elements.size(); i++)
+    {
+      normals.push_back(raw_normals[n_elements[i] - 1]);
+    }
   
+  //Set color of all vertices to be white
   colors.resize(vertices.size());
-  
   for (unsigned int i = 0; i < vertices.size(); i++)
     {
       colors[i] = vec3(1.0, 1.0, 1.0);
@@ -174,6 +188,7 @@ void init( void )
   strafeL = strafeR = false;
   up = down = false;
   
+  //Set initial camera position backwards from the (very large) model so it's all visible from the get-go
   cameraPos = 0;
   cameraPos.z = -10;
   cameraRot = 0;
@@ -382,6 +397,7 @@ void idle()
     cameraRot.y -= 360;
   }
 
+  //Move the x-position of light 0 back and forth to show off our shading 
   if( lightDir == 0 ) {
     lightPos0.x -= lightSpeed;
   } else {

@@ -10,8 +10,12 @@ uniform mat4 m;
 void main()
 {
 	vec3 vertex_normal = normalize(gl_NormalMatrix * vNormal);
-	vec3 vertex_light_position = gl_LightSource[0].position.xyz;
-	lightDiff = gl_LightSource[0].diffuse * max(dot(vertex_normal, vertex_light_position), 0.0);
+	vec3 vertex_light_pos0 = gl_LightSource[0].position.xyz;
+	vec3 vertex_light_pos1 = gl_LightSource[1].position.xyz;
+
+	vec4 light0Diff = gl_LightSource[0].diffuse * max(dot(vertex_normal, vertex_light_pos0), 0.0);
+	vec4 light1Diff = gl_LightSource[1].diffuse * max(dot(vertex_normal, vertex_light_pos1), 0.0);
+	lightDiff = light0Diff + light1Diff;
 
     	gl_Position = m * vPosition;
 	color = vec4(vColor, 1);

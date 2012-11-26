@@ -15,7 +15,8 @@ vec4 cameraPos;
 vec3 cameraRot;
 vec4 cameraVel;
 
-vec4 lightPos;
+vec4 lightPos0;
+vec4 lightPos1;
 int lightDir = 0; //0 is left, 1 is right
 float lightSpeed = 0.005;
 
@@ -55,24 +56,26 @@ vector<string> split(string str, char delim)
 
 void initLights( void ) {
 
-  lightPos = vec4( 0.0, -0.5, 0.5, 1.0 );
-
+  lightPos0 = vec4( 0.0, -2.0, 0.4, 1.0 );
+  lightPos1 = vec4( 0.0, 0.25, 0.2, 1.0 );
+  
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
+  glEnable(GL_LIGHT1);
   glEnable(GL_NORMALIZE);
 
   // -------------------------------------------                                                
   // Lighting parameters:                                                                       
 
-  GLfloat light_pos[] = {lightPos.x, lightPos.y, lightPos.z, lightPos.w};
-  GLfloat light_Ka[]  = {0.2f, 0.2f, 0.2f, 1.0f};
+  GLfloat light_pos0[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
+  GLfloat light_pos1[] = {lightPos1.x, lightPos1.y, lightPos1.z, lightPos1.w};
   GLfloat light_Kd[]  = {0.5f, 1.0f, 0.5f, 1.0f};
-  GLfloat light_Ks[]  = {1.0f, 1.0f, 1.0f, 1.0f};
+  GLfloat light_Kd1[] = {0.5f, 0.5f, 1.0f, 1.0f};
 
-  glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-  glLightfv(GL_LIGHT0, GL_AMBIENT, light_Ka);
+  glLightfv(GL_LIGHT0, GL_POSITION, light_pos0);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
-  glLightfv(GL_LIGHT0, GL_SPECULAR, light_Ks);
+  glLightfv(GL_LIGHT1, GL_POSITION, light_pos1);
+  glLightfv(GL_LIGHT1, GL_DIFFUSE, light_Kd1);
 
 }
 
@@ -380,16 +383,16 @@ void idle()
   }
 
   if( lightDir == 0 ) {
-    lightPos.x -= lightSpeed;
+    lightPos0.x -= lightSpeed;
   } else {
-    lightPos.x += lightSpeed;
+    lightPos0.x += lightSpeed;
   }
-  if( lightPos.x < -3.0 ) {
+  if( lightPos0.x < -3.0 ) {
     lightDir = 1;
-  } else if( lightPos.x > 3.0 ) {
+  } else if( lightPos0.x > 3.0 ) {
     lightDir = 0;
   }
-  GLfloat light_pos[] = {lightPos.x, lightPos.y, lightPos.z, lightPos.w};
+  GLfloat light_pos[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
   glutPostRedisplay(); 

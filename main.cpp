@@ -9,7 +9,7 @@
 #include <string>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.01;
+#define MOVEMENT_SPEED 0.04;
 
 vec4 cameraPos;
 vec3 cameraRot;
@@ -18,7 +18,7 @@ vec4 cameraVel;
 vec4 lightPos0;
 vec4 lightPos1;
 int lightDir = 0; //0 is left, 1 is right
-float lightSpeed = 0.005;
+float lightSpeed = 0.04;
 
 vec2 mouseCenter;
 
@@ -175,7 +175,7 @@ void init( void )
   up = down = false;
   
   cameraPos = 0;
-  cameraPos.z = -4;
+  cameraPos.z = -10;
   cameraRot = 0;
   
   mouseCenter = -1;

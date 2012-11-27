@@ -18,7 +18,7 @@ vec4 cameraVel;
 vec4 lightPos0;
 vec4 lightPos1;
 float lightSpeed = 0.002; //Speed of light0 orbit
-float lightOrbitRad = 2.0; //Radius of light0 orbit
+float lightOrbitRad = 3.0; //Radius of light0 orbit
 float i = 0; //Light0 orbit frame
 
 vec2 mouseCenter;
@@ -66,18 +66,17 @@ vector<string> split(string str, char delim)
 void initLights( void ) {
 
   //Initial positions
-  lightPos0 = vec4( 0.0, -2.0, 0.0, 1.0 );
-  lightPos1 = vec4( 0.0, 0.25, 0.5, 1.0 );
+  lightPos0 = vec4( 0.0, 5.0, 0.0, 1.0 );
+  lightPos1 = vec4( 0.0, -1.0, 0.5, 1.0 );
   
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_LIGHT1);
-  glEnable(GL_NORMALIZE);
 
   //Put things into the right format for the shader
   GLfloat light_pos0[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
   GLfloat light_pos1[] = {lightPos1.x, lightPos1.y, lightPos1.z, lightPos1.w};
-  GLfloat light_Kd[]  = {0.2f, 0.5f, 0.2f, 1.0f};
+  GLfloat light_Kd[]  = {0.1f, 0.6f, 0.1f, 1.0f};
   GLfloat light_Kd1[] = {0.5f, 0.5f, 1.0f, 1.0f};
 
   //Send lighting information to the GPU
@@ -161,7 +160,7 @@ void init( void )
   vector<GLushort> n_elements;
   vector<vec3> colors;
 
-  //Fixes GlutMouseWarpPointer on Mac, thanks to John Huston
+  //Fixes GlutMouseWarpPointer on Mac, thanks to John Huston and Chris Compton
 #ifdef __APPLE__
   CGSetLocalEventsSuppressionInterval( 0.0 );
 #endif

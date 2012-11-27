@@ -421,8 +421,8 @@ main( int argc, char **argv )
 {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_SINGLE );
-    glutInitWindowSize( 512, 512 );
-    glutCreateWindow( "Flyby" );
+    glutInitWindowSize( 800, 800 );
+    glutCreateWindow( "Monkey Robot" );
     init();
 
     glutDisplayFunc( display );

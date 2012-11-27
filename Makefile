@@ -1,5 +1,5 @@
 main: main.cpp InitShader.o
-	g++ -g -o project main.cpp InitShader.o -Wall -framework OpenGL -framework GLUT
+	g++ -g -o project main.cpp InitShader.o -Wall -framework OpenGL -framework GLUT -framework CoreGraphics
 
 InitShader: InitShader.cpp
 	g++ -c InitShader.cpp

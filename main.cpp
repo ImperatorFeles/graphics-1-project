@@ -9,7 +9,7 @@
 #include <string>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.04;
+#define MOVEMENT_SPEED 0.01;
 
 vec4 cameraPos;
 vec3 cameraRot;
@@ -17,8 +17,9 @@ vec4 cameraVel;
 
 vec4 lightPos0;
 vec4 lightPos1;
-int lightDir = 0; //0 is left, 1 is right
-float lightSpeed = 0.04; //Speed of light0 oscillation
+float lightSpeed = 0.002; //Speed of light0 orbit
+float lightOrbitRad = 2.0; //Radius of light0 orbit
+float i = 0; //Light0 orbit frame
 
 vec2 mouseCenter;
 
@@ -65,8 +66,8 @@ vector<string> split(string str, char delim)
 void initLights( void ) {
 
   //Initial positions
-  lightPos0 = vec4( 0.0, -2.0, 0.4, 1.0 );
-  lightPos1 = vec4( 0.0, 0.25, 0.2, 1.0 );
+  lightPos0 = vec4( 0.0, -2.0, 0.0, 1.0 );
+  lightPos1 = vec4( 0.0, 0.25, 0.5, 1.0 );
   
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
@@ -76,7 +77,7 @@ void initLights( void ) {
   //Put things into the right format for the shader
   GLfloat light_pos0[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
   GLfloat light_pos1[] = {lightPos1.x, lightPos1.y, lightPos1.z, lightPos1.w};
-  GLfloat light_Kd[]  = {0.5f, 1.0f, 0.5f, 1.0f};
+  GLfloat light_Kd[]  = {0.2f, 0.5f, 0.2f, 1.0f};
   GLfloat light_Kd1[] = {0.5f, 0.5f, 1.0f, 1.0f};
 
   //Send lighting information to the GPU
@@ -159,7 +160,12 @@ void init( void )
   vector<GLushort> v_elements;
   vector<GLushort> n_elements;
   vector<vec3> colors;
-  
+
+  //Fixes GlutMouseWarpPointer on Mac, thanks to John Huston
+#ifdef __APPLE__
+  CGSetLocalEventsSuppressionInterval( 0.0 );
+#endif
+    
   load_obj("models/monkeyrobot.obj", raw_vertices, raw_normals, v_elements, n_elements);
 
   initLights();
@@ -397,17 +403,13 @@ void idle()
     cameraRot.y -= 360;
   }
 
-  //Move the x-position of light 0 back and forth to show off our shading 
-  if( lightDir == 0 ) {
-    lightPos0.x -= lightSpeed;
-  } else {
-    lightPos0.x += lightSpeed;
-  }
-  if( lightPos0.x < -3.0 ) {
-    lightDir = 1;
-  } else if( lightPos0.x > 3.0 ) {
-    lightDir = 0;
-  }
+  //Make light 0 orbit the center point
+  //Thanks to Nick St.Pierre
+  if ( i > 360 )
+    i = 0;
+  i += lightSpeed;
+  lightPos0.z = sin(i)*lightOrbitRad;
+  lightPos0.x = cos(i)*lightOrbitRad;
   GLfloat light_pos[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 

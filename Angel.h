@@ -43,6 +43,7 @@
 #include <GLUT/glut.h>
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
+#include <CoreGraphics/CGRemoteOperation.h>
 #elif _WIN32
 #include <GL/glew.h>
 #include <GL/freeglut.h>

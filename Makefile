@@ -1,6 +1,12 @@
-main: main.cpp InitShader.o
-	g++ -g -o project main.cpp InitShader.o -Wall -framework OpenGL -framework GLUT -framework CoreGraphics
+GL_FLAGS=-lGL -lGLU -lglut -lGLEW
+DEPS=
+OBJ=main.o InitShader.o SceneObject.o ModelObject.o
 
-InitShader: InitShader.cpp
-	g++ -c InitShader.cpp
+%.o: %.cpp $(DEPS)
+	g++ -g -c -o $@ $< $(GL_FLAGS)
 
+project: $(OBJ)
+	g++ -g -o $@ $^ $(GL_FLAGS)
+
+clean:
+	rm *.o project

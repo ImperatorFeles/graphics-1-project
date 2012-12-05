@@ -17,6 +17,6 @@ void main()
 	vec4 light1Diff = gl_LightSource[1].diffuse * max(dot(vertex_normal, vertex_light_pos1), 0.0);
 	lightDiff = light0Diff + light1Diff;
 
-    	gl_Position = m * vPosition;
+   	gl_Position = m * vPosition;
 	color = vec4(vColor, 1);
 }

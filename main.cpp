@@ -2,6 +2,7 @@
 #include "vec.h"
 #include "mat.h"
 #include "ModelObject.h"
+#include "OBJParser.h"
 
 #include <iostream>
 #include <vector>
@@ -40,31 +41,6 @@ bool up, down;
 using namespace std;
 
 /*
-   Basic function to split strings over a delimiter
-   used in model parsing
- */
-vector<string> split(string str, char delim)
-{
-	vector<string> *elements = new vector<string>();
-
-	// loop through and break string up by the deliminator
-	while (str.find_first_of(delim) != string::npos)
-	{
-		// position of deliminator in current string
-		int pos = str.find_first_of(delim);
-
-		elements->push_back(str.substr(0, pos));
-
-		str = str.substr(pos + 1);
-	}
-
-	// str will have the final element remaining in it
-	elements->push_back(str);
-
-	return *elements;
-}
-
-/*
    Initialize lights for the scene
    Defines initial positions and colors
  */
@@ -92,144 +68,6 @@ void initLights( void ) {
 
 }
 
-/*
-   .obj model loader
-   models must be triangulated, and have normals included to be
-   correctly parsed
-   vertices, normals, vertex elements, and normal elements will be returned to pointers to vectors
- */
-vector<ModelObject>* load_obj(const char* filename)
-{
-		// file input stream
-	ifstream in(filename, ios::in);
-
-	if (!in)
-	{
-		cerr << "Cannot open " << filename << endl;
-		exit(1);
-	}
-	
-	bool firstObject = true;
-
-	vector<vec4> raw_vertices;
-	vector<vec4> vertices;
-	vector<vec3> raw_normals;
-	vector<vec3> normals;
-	vector<vec2> textureUVs;
-	vector<int> v_elements;
-	vector<int> n_elements;
-
-	vector<ModelObject> *objects = new vector<ModelObject>;
-
-	string line;
-	string objName;
-
-	// parse the .obj file for its data
-	while (getline(in, line))
-	{
-		// lines beginning with 'v ' have vertices
-		if (line.substr(0, 2) == "v ")
-		{
-			// read in vertex coords
-			istringstream s(line.substr(2));
-			vec4 v;
-			s >> v.x;
-			s >> v.y;
-			s >> v.z;
-			v.w = 1.0;
-
-			raw_vertices.push_back(v);
-		}
-
-		// 'o ' or 'g ' signify a new object is starting
-		else if (line.substr(0, 1) == "o" || line.substr(0, 1) == "g")
-		{
-			if (line.substr(1).compare("") == 0)
-			{
-				objName = "Unnamed Object";
-			}
-			else
-			{
-				objName = line.substr(2);
-			}
-
-			// skip writing data to an object if we don't have data yet
-			if (firstObject)
-			{
-				firstObject = false;
-				continue;
-			}
-
-			// put the raw vertices from the file and put them into a vector based on elements
-			for (int i = 0; i < v_elements.size(); i++)
-			{
-				vertices.push_back(raw_vertices[v_elements[i] - 1]);
-			}
-
-			// do the same for the normals
-			for (int i = 0; i < n_elements.size(); i++)
-			{
-				normals.push_back(raw_normals[n_elements[i] - 1]);
-			}
-
-			objects->push_back(*new ModelObject(objName, vertices, normals, textureUVs));
-
-			vertices.clear();
-			normals.clear();
-			textureUVs.clear();
-			n_elements.clear();
-			v_elements.clear();
-		}
-
-		// lines beginning with 'f ' have elements
-		else if (line.substr(0, 2) == "f ")
-		{
-			istringstream s(line.substr(2));
-			string a, b, c;
-			s >> a;
-			s >> b;
-			s >> c;
-
-			// split elements by '/'
-			v_elements.push_back(atoi(split(a, '/')[0].c_str()));
-			v_elements.push_back(atoi(split(b, '/')[0].c_str()));
-			v_elements.push_back(atoi(split(c, '/')[0].c_str()));
-
-			n_elements.push_back(atoi(split(a, '/')[2].c_str()));
-			n_elements.push_back(atoi(split(b, '/')[2].c_str()));
-			n_elements.push_back(atoi(split(c, '/')[2].c_str()));
-		}
-		// lines beginning with 'vn ' will have normals
-		else if (line.substr(0, 3) == "vn ") {
-			istringstream s(line.substr(3));
-			vec3 vn;
-			s >> vn.x;
-			s >> vn.y;
-			s >> vn.z;
-
-			raw_normals.push_back(vn);
-		}
-		else if (line[0] == '#') { /* ignore comments */ }
-		else { /* blank/junk */ }
-	}
-
-	// put the raw vertices from the file and put them into a vector based on elements
-	for (int i = 0; i < v_elements.size(); i++)
-	{
-		vertices.push_back(raw_vertices[v_elements[i] - 1]);
-	}
-
-	// do the same for the normals
-	for (int i = 0; i < n_elements.size(); i++)
-	{
-		normals.push_back(raw_normals[n_elements[i] - 1]);
-	}
-
-	objects->push_back(*new ModelObject(objName, vertices, normals, textureUVs));
-
-	return objects;
-}
-
 void init( void )
 {
 	vector<vec3> normals;
@@ -242,10 +80,11 @@ void init( void )
 	CGSetLocalEventsSuppressionInterval( 0.0 );
 #endif
 
-	objects = load_obj("models/test.obj");
+	objects = OBJParser::load_obj("models/art.obj");
 
-	vertices = objects->at(1).getVertices();
-	normals = objects->at(1).getNormals();
+	vertices = objects->at(0).getVertices();
+	normals = objects->at(0).getNormals();
+	cout << "Number of UVs: " << objects->at(0).getTextureUVs().size() << endl;
 
 	numVertices = vertices.size();
 
@@ -488,8 +327,7 @@ void idle()
 }
 //----------------------------------------------------------------------------
 
-	int
-main( int argc, char **argv )
+int main( int argc, char **argv )
 {
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_SINGLE );

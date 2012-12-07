@@ -1,5 +1,7 @@
 project
 .DS_Store
-project.dSYM/Contents/Info.plist
+project.dSYM*
 *~
 *#*
+*.o
+mac

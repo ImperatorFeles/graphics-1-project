@@ -3,6 +3,7 @@
 #include "mat.h"
 #include "ModelObject.h"
 #include "OBJParser.h"
+#include "SOIL.h"
 
 #include <iostream>
 #include <vector>
@@ -30,6 +31,7 @@ mat4 transformation;
 
 // pointer to matrix in shader
 GLuint matLoc;
+GLuint gSampler;
 
 int numVertices = 0;
 
@@ -52,13 +54,13 @@ void initLights( void ) {
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
+	//glEnable(GL_LIGHT1);
 
 	//Put things into the right format for the shader
 	GLfloat light_pos0[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
 	GLfloat light_pos1[] = {lightPos1.x, lightPos1.y, lightPos1.z, lightPos1.w};
-	GLfloat light_Kd[]  = {0.1f, 0.6f, 0.1f, 1.0f};
-	GLfloat light_Kd1[] = {0.5f, 0.5f, 1.0f, 1.0f};
+	GLfloat light_Kd[]  = {0.1f, 0.1f, 0.1f, 1.0f};
+	GLfloat light_Kd1[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	//Send lighting information to the GPU
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos0);
@@ -73,18 +75,30 @@ void init( void )
 	vector<vec3> normals;
 	vector<vec4> vertices;
 	vector<vec3> colors;
+	vector<vec2> uvs;
+
 	vector<ModelObject> *objects;
+
+	GLuint tex2d = SOIL_load_OGL_texture("img/subwaycar.png", 
+			SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
+			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
+
+	if (tex2d == -1)
+	{
+		cout << "Failed to load texture file";
+		exit(0);
+	}
 
 	//Fixes GlutMouseWarpPointer on Mac, thanks to John Huston and Chris Compton
 #ifdef __APPLE__
 	CGSetLocalEventsSuppressionInterval( 0.0 );
 #endif
 
-	objects = OBJParser::load_obj("models/art.obj");
+	objects = OBJParser::load_obj("models/subwaycar-done.obj");
 
 	vertices = objects->at(0).getVertices();
 	normals = objects->at(0).getNormals();
-	cout << "Number of UVs: " << objects->at(0).getTextureUVs().size() << endl;
+	uvs = objects->at(0).getTextureUVs();
 
 	numVertices = vertices.size();
 
@@ -118,10 +132,17 @@ void init( void )
 	glGenBuffers( 1, &buffer );
 	glBindBuffer( GL_ARRAY_BUFFER, buffer );
 
+	// send texture information to GPU
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex2d);
+	glEnable(GL_TEXTURE_2D);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	// First, we create an empty buffer of the size we need by passing
 	//   a NULL pointer for the data values
 	glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() 
-			+ sizeof(vec3) * normals.size(), NULL, GL_STATIC_DRAW );
+			+ sizeof(vec3) * normals.size() + sizeof(vec2) * uvs.size(), NULL, GL_STATIC_DRAW );
 
 	// Next, we load the real data in parts.  We need to specify the
 	//   correct byte offset for placing the color data after the point
@@ -133,6 +154,8 @@ void init( void )
 			sizeof(vec3) * colors.size(), &colors[0]);
 	glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
 			sizeof(vec3) * normals.size(), &normals[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() + sizeof(vec3) * normals.size(),
+			sizeof(vec2) * uvs.size(), &uvs[0]);
 
 	// Load shaders and use the resulting shader program
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
@@ -157,11 +180,17 @@ void init( void )
 	glVertexAttribPointer( vNormal, 3, GL_FLOAT, GL_FALSE, 0,
 			BUFFER_OFFSET(sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size()) );
 
+	GLuint vTexture = glGetAttribLocation(program, "vTexture");
+	glEnableVertexAttribArray(vTexture);
+	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0,
+			BUFFER_OFFSET(sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() + sizeof(vec3) * normals.size()));
+
 	matLoc = glGetUniformLocation(program, "m");
+	gSampler = glGetUniformLocation(program, "gSampler");
 
 	glEnable( GL_DEPTH_TEST );
 
-	glClearColor( 0.0, 0.0, 0.0, 1.0 ); /* white background */
+	glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
 }
 
 	void
@@ -183,6 +212,8 @@ display( void )
 
 	// pass matrix to shader
 	glUniformMatrix4fv(matLoc, 1, true, transformation);
+	glUniform1i(gSampler, 0);
+
 	glDrawArrays( GL_TRIANGLES, 0, numVertices);
 	glFlush();
 }

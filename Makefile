@@ -1,4 +1,5 @@
 GL_FLAGS=-lSOIL -lGL -lGLU -lglut -lGLEW
+MAC_FLAGS=-framework OpenGL -framework Glut -framework Carbon -lSOILMac
 C_FLAGS=-g -Wall
 DEPS=
 OBJ=main.o InitShader.o SceneObject.o ModelObject.o OBJParser.o
@@ -8,6 +9,9 @@ OBJ=main.o InitShader.o SceneObject.o ModelObject.o OBJParser.o
 
 project: $(OBJ)
 	g++ $(C_FLAGS) -o $@ $^ -L. $(GL_FLAGS)
+
+mac: $(OBJ)
+	g++ $(C_FLAGS) -o $@ $^ -L. $(MAC_FLAGS)
 
 clean:
 	rm *.o project

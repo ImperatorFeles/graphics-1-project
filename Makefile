@@ -1,5 +1,5 @@
-GL_FLAGS=-lSOIL -lGL -lGLU -lglut -lGLEW
-MAC_FLAGS=-framework OpenGL -framework Glut -framework Carbon -lSOILMac
+GL_FLAGS=-lSOIL -lGL -lGLU -lglut -lGLEW -lopenal
+MAC_FLAGS=-framework OpenGL -framework Glut -framework Carbon -lSOILMac -framework OpenAL
 C_FLAGS=-g -Wall
 DEPS=
 OBJ=main.o InitShader.o SceneObject.o ModelObject.o OBJParser.o

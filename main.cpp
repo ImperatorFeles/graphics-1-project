@@ -12,7 +12,7 @@
 #include <string>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.04;
+#define MOVEMENT_SPEED 0.001
 
 vec4 cameraPos; // position of camera
 vec3 cameraRot; // rotation of camera
@@ -22,7 +22,7 @@ vec4 cameraVel; // velocity of camera
 vec4 lightPos0;
 vec4 lightPos1;
 
-float lightSpeed = 0.02; //Speed of light0 orbit
+float lightSpeed = 0.00; //Speed of light0 orbit
 float lightOrbitRad = 3.0; //Radius of light0 orbit
 float i = 0; //Light0 orbit frame
 
@@ -284,8 +284,7 @@ void passiveMotion(int x, int y)
 		cameraRot.y -= (255 - x) * MOUSE_SENSITIVITY;
 
 		// lock the up and down look to no more than 90 degrees
-		if (cameraRot.x - (255 - y) * MOUSE_SENSITIVITY <= 90 &&
-				cameraRot.x - (255 - y) * MOUSE_SENSITIVITY >= -90)
+		if (cameraRot.x - (255 - y) * MOUSE_SENSITIVITY <= 90 && cameraRot.x - (255 - y) * MOUSE_SENSITIVITY >= -90)
 		{
 			cameraRot.x -= (255 - y) * MOUSE_SENSITIVITY;
 		}

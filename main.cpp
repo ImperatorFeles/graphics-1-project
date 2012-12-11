@@ -103,15 +103,17 @@ void init( void )
 
 	transformation = *new mat4();
 
-	// Create a vertex array object
+	// Create vertex array objects
 	GLuint vao;
 	glGenVertexArrays( 1, &vao );
 	glBindVertexArray( vao );
 
 	// Create and initialize a buffer object
-	GLuint buffer;
-	glGenBuffers( 1, &buffer );
-	glBindBuffer( GL_ARRAY_BUFFER, buffer );
+	GLuint vboVertices, vboColors, vboNormals, vboUVs;
+	glGenBuffers( 1, &vboVertices );
+	glGenBuffers( 1, &vboColors );
+	glGenBuffers( 1, &vboNormals );
+	glGenBuffers( 1, &vboUVs );
 
 	// send texture information to GPU
 	glActiveTexture(GL_TEXTURE0);
@@ -120,51 +122,37 @@ void init( void )
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// First, we create an empty buffer of the size we need by passing
-	//   a NULL pointer for the data values
-	glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() 
-			+ sizeof(vec3) * normals.size() + sizeof(vec2) * uvs.size(), NULL, GL_STATIC_DRAW );
-
-	// Next, we load the real data in parts.  We need to specify the
-	//   correct byte offset for placing the color data after the point
-	//   data in the buffer.  Conveniently, the byte offset we need is
-	//   the same as the size (in bytes) of the points array, which is
-	//   returned from "sizeof(points)".
-	glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec4) * vertices.size(), &vertices[0]);
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), 
-			sizeof(vec3) * colors.size(), &colors[0]);
-	glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size(),
-			sizeof(vec3) * normals.size(), &normals[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() + sizeof(vec3) * normals.size(),
-			sizeof(vec2) * uvs.size(), &uvs[0]);
-
 	// Load shaders and use the resulting shader program
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
-	glUseProgram(program);
+        glUseProgram(program);
 
+	//Buffer the data for vertices
+	glBindBuffer( GL_ARRAY_BUFFER, vboVertices );	
+	glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), &vertices[0], GL_STATIC_DRAW );
 	GLuint vPosition = glGetAttribLocation(program, "vPosition");
-	glEnableVertexAttribArray( vPosition );
-	glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
-			BUFFER_OFFSET(0) );
+        glEnableVertexAttribArray( vPosition );
+        glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
-	// Likewise, initialize the vertex color attribute.  Once again, we
-	//    need to specify the starting offset (in bytes) for the color
-	//    data.  Just like loading the array, we use "sizeof(points)"
-	//    to determine the correct value.
+	//Buffer the data for colors
+	glBindBuffer( GL_ARRAY_BUFFER, vboColors );
+        glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * colors.size(), &colors[0], GL_STATIC_DRAW );
 	GLuint vColor = glGetAttribLocation( program, "vColor" );
 	glEnableVertexAttribArray( vColor );
-	glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
-			BUFFER_OFFSET(sizeof(vec4) * vertices.size()) );
+        glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
-	GLuint vNormal = glGetAttribLocation( program, "vNormal" );
+	//Buffer the data for normals                                         
+	glBindBuffer( GL_ARRAY_BUFFER, vboNormals );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * normals.size(), &normals[0], GL_STATIC_DRAW );
+	GLuint vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray( vNormal );
-	glVertexAttribPointer( vNormal, 3, GL_FLOAT, GL_FALSE, 0,
-			BUFFER_OFFSET(sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size()) );
+	glVertexAttribPointer( vNormal, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
+	//Buffer the data for UVs                                         
+	glBindBuffer( GL_ARRAY_BUFFER, vboUVs );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(vec2) * uvs.size(), &uvs[0], GL_STATIC_DRAW );
 	GLuint vTexture = glGetAttribLocation(program, "vTexture");
-	glEnableVertexAttribArray(vTexture);
-	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0,
-			BUFFER_OFFSET(sizeof(vec4) * vertices.size() + sizeof(vec3) * colors.size() + sizeof(vec3) * normals.size()));
+	glEnableVertexAttribArray( vTexture );
+	glVertexAttribPointer( vTexture, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
 	matLoc = glGetUniformLocation(program, "m");
 	gSampler = glGetUniformLocation(program, "gSampler");

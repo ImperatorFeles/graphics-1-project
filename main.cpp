@@ -12,7 +12,7 @@
 #include <string>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.001
+#define MOVEMENT_SPEED 0.005
 
 vec4 cameraPos; // position of camera
 vec3 cameraRot; // rotation of camera

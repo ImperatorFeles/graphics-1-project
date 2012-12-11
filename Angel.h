@@ -44,7 +44,6 @@
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
 #include <CoreGraphics/CGRemoteOperation.h>
-#include <OpenAL/al.h>
 #elif _WIN32
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -54,7 +53,6 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <GL/glext.h>
-#include <AL/al.h>
 
 #endif
 

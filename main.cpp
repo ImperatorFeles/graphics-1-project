@@ -2,6 +2,7 @@
 #include "vec.h"
 #include "mat.h"
 #include "ModelObject.h"
+#include "LightObject.h"
 #include "OBJParser.h"
 #include "SOIL.h"
 
@@ -17,14 +18,6 @@
 vec4 cameraPos; // position of camera
 vec3 cameraRot; // rotation of camera
 vec4 cameraVel; // velocity of camera
-
-// light position
-vec4 lightPos0;
-vec4 lightPos1;
-
-float lightSpeed = 0.00; //Speed of light0 orbit
-float lightOrbitRad = 3.0; //Radius of light0 orbit
-float i = 0; //Light0 orbit frame
 
 // current transformation matrix
 mat4 transformation;
@@ -48,25 +41,13 @@ using namespace std;
  */
 void initLights( void ) {
 
-	//Initial positions
-	lightPos0 = vec4( 0.0, 5.0, 0.0, 1.0 );
-	lightPos1 = vec4( 0.0, -1.0, 0.5, 1.0 );
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	//glEnable(GL_LIGHT1);
-
-	//Put things into the right format for the shader
-	GLfloat light_pos0[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
-	GLfloat light_pos1[] = {lightPos1.x, lightPos1.y, lightPos1.z, lightPos1.w};
-	GLfloat light_Kd[]  = {0.1f, 0.1f, 0.1f, 1.0f};
-	GLfloat light_Kd1[] = {1.0f, 1.0f, 1.0f, 1.0f};
-
-	//Send lighting information to the GPU
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos0);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_Kd);
-	glLightfv(GL_LIGHT1, GL_POSITION, light_pos1);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_Kd1);
+  glEnable(GL_LIGHTING);
+  
+  //Initial positions
+  vec3 lightPos0 = vec3( 0.0, 5.0, 0.0 );
+  vec4 lightDiff0 = vec4 (0.1f, 0.1f, 0.1f, 1.0f );
+  vec4 lightSpec0 = vec4 (1.0f, 1.0f, 1.0f, 1.0f );
+  LightObject lightObj0 = LightObject("Light1", lightDiff0, lightSpec0, 0.5, lightPos0);
 
 }
 
@@ -343,16 +324,6 @@ void idle()
 		cameraRot.y -= 360;
 	}
 
-	//Make light 0 orbit the center point
-	//Thanks to Nick St.Pierre
-	if ( i > 360 )
-		i = 0;
-	i += lightSpeed;
-	lightPos0.z = sin(i)*lightOrbitRad;
-	lightPos0.x = cos(i)*lightOrbitRad;
-	GLfloat light_pos[] = {lightPos0.x, lightPos0.y, lightPos0.z, lightPos0.w};
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-
 	glutPostRedisplay(); 
 }
 //----------------------------------------------------------------------------
@@ -362,7 +333,7 @@ int main( int argc, char **argv )
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_SINGLE );
 	glutInitWindowSize( 800, 800 );
-	glutCreateWindow( "Monkey Robot" );
+	glutCreateWindow( "Graphics" );
 	init();
 
 	glutDisplayFunc( display );

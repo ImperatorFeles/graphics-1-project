@@ -21,12 +21,10 @@ vec4 cameraVel; // velocity of camera
 
 // current transformation matrix
 mat4 transformation;
+GLuint camMatLoc;
 
-// pointer to matrix in shader
-GLuint matLoc;
-GLuint gSampler;
-
-int numVertices = 0;
+//Vector of ModelObjects in the scene
+vector<ModelObject> *objects;
 
 // camera movement directions
 bool forward_, backward;
@@ -53,18 +51,11 @@ void initLights( void ) {
 
 void init( void )
 {
-	vector<vec3> normals;
-	vector<vec4> vertices;
-	vector<vec3> colors;
-	vector<vec2> uvs;
-
-	vector<ModelObject> *objects;
-
 	GLuint tex2d = SOIL_load_OGL_texture("img/subwaycar.png", 
 			SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
 			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
 
-	if (tex2d == -1)
+	if (!tex2d)
 	{
 		cout << "Failed to load texture file";
 		exit(0);
@@ -77,20 +68,7 @@ void init( void )
 
 	objects = OBJParser::load_obj("models/subwaycar-done.obj");
 
-	vertices = objects->at(0).getVertices();
-	normals = objects->at(0).getNormals();
-	uvs = objects->at(0).getTextureUVs();
-
-	numVertices = vertices.size();
-
 	initLights();
-
-	//Set color of all vertices to be white
-	colors.resize(vertices.size());
-	for (unsigned int i = 0; i < vertices.size(); i++)
-	{
-		colors[i] = vec3(1.0, 1.0, 1.0);
-	}
 
 	forward_ = backward = false;
 	strafeL = strafeR = false;
@@ -101,19 +79,14 @@ void init( void )
 	cameraPos.z = -10;
 	cameraRot = 0;
 
+	//Can use a call like this to move the object before it's drawn
+	//objects->at(0).setPosition( vec3(0.0,0.0,0.0) );
+
 	transformation = *new mat4();
 
-	// Create vertex array objects
-	GLuint vao;
-	glGenVertexArrays( 1, &vao );
-	glBindVertexArray( vao );
-
-	// Create and initialize a buffer object
-	GLuint vboVertices, vboColors, vboNormals, vboUVs;
-	glGenBuffers( 1, &vboVertices );
-	glGenBuffers( 1, &vboColors );
-	glGenBuffers( 1, &vboNormals );
-	glGenBuffers( 1, &vboUVs );
+	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
+	glUseProgram( program );
+	camMatLoc = glGetUniformLocation( program, "camM");
 
 	// send texture information to GPU
 	glActiveTexture(GL_TEXTURE0);
@@ -122,48 +95,14 @@ void init( void )
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// Load shaders and use the resulting shader program
-	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
-        glUseProgram(program);
-
-	//Buffer the data for vertices
-	glBindBuffer( GL_ARRAY_BUFFER, vboVertices );	
-	glBufferData( GL_ARRAY_BUFFER, sizeof(vec4) * vertices.size(), &vertices[0], GL_STATIC_DRAW );
-	GLuint vPosition = glGetAttribLocation(program, "vPosition");
-        glEnableVertexAttribArray( vPosition );
-        glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
-	//Buffer the data for colors
-	glBindBuffer( GL_ARRAY_BUFFER, vboColors );
-        glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * colors.size(), &colors[0], GL_STATIC_DRAW );
-	GLuint vColor = glGetAttribLocation( program, "vColor" );
-	glEnableVertexAttribArray( vColor );
-        glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
-	//Buffer the data for normals                                         
-	glBindBuffer( GL_ARRAY_BUFFER, vboNormals );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * normals.size(), &normals[0], GL_STATIC_DRAW );
-	GLuint vNormal = glGetAttribLocation(program, "vNormal");
-	glEnableVertexAttribArray( vNormal );
-	glVertexAttribPointer( vNormal, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
-	//Buffer the data for UVs                                         
-	glBindBuffer( GL_ARRAY_BUFFER, vboUVs );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(vec2) * uvs.size(), &uvs[0], GL_STATIC_DRAW );
-	GLuint vTexture = glGetAttribLocation(program, "vTexture");
-	glEnableVertexAttribArray( vTexture );
-	glVertexAttribPointer( vTexture, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
-	matLoc = glGetUniformLocation(program, "m");
-	gSampler = glGetUniformLocation(program, "gSampler");
+	objects->at(0).generateBuffers();
 
 	glEnable( GL_DEPTH_TEST );
 
 	glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
 }
 
-	void
-display( void )
+void display( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -179,19 +118,14 @@ display( void )
 	transformation = transformation * RotateX(cameraRot.x) * RotateY(cameraRot.y);
 	transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
 
-	// pass matrix to shader
-	glUniformMatrix4fv(matLoc, 1, true, transformation);
-	glUniform1i(gSampler, 0);
+	glUniformMatrix4fv( camMatLoc, 1, true, transformation );
 
-	glDrawArrays( GL_TRIANGLES, 0, numVertices);
+	objects->at(0).draw();
+
 	glFlush();
 }
 
-//----------------------------------------------------------------------------
-
-// handles glut keyboard events
-	void
-keyboard( unsigned char key, int x, int y )
+void keyboard( unsigned char key, int x, int y )
 {
 	switch ( key ) {
 		case 033:
@@ -218,7 +152,6 @@ keyboard( unsigned char key, int x, int y )
 	}
 }
 
-// handles glut keyboardUp events
 void keyboardUp(unsigned char key, int x, int y)
 {
 	switch (key)
@@ -314,7 +247,6 @@ void idle()
 
 	glutPostRedisplay(); 
 }
-//----------------------------------------------------------------------------
 
 int main( int argc, char **argv )
 {

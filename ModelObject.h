@@ -14,6 +14,8 @@ class ModelObject : public SceneObject
 		vector<vec4> vertices; // stores all vertices of the object
 		vector<vec3> normals; // stores normals of the faces of the object
 		vector<vec2> textureUVs; // stores UV coordinates for faces
+		GLuint samplerLoc; // texture sampler location in shader
+		GLuint matLoc; // matrix location in shader
 
 	public:
 		// create model object without position, rotation, scale
@@ -25,7 +27,10 @@ class ModelObject : public SceneObject
 		vector<vec4> getVertices();
 		vector<vec3> getNormals();
 		vector<vec2> getTextureUVs();
-
+		
+		// methods for buffering and for drawing
+		void generateBuffers();
+		void draw();
 };
 
 #endif

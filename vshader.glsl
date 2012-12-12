@@ -10,6 +10,7 @@ varying vec4 lightDiff;
 varying vec2 outtexture;
 
 uniform mat4 m;
+uniform mat4 camM;
 
 void main()
 {
@@ -23,6 +24,6 @@ void main()
 
 	outtexture = vTexture;
 
-   	gl_Position = m * vPosition;
+   	gl_Position = (camM + m) *  vPosition;
 	color = vec4(vColor, 1);
 }

@@ -65,9 +65,7 @@ void init( void )
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
 	OBJParser::load_obj("models/art.obj", world);
 
-	cout << world.getActors()->size() << endl;
-
-	initLights();
+	//	initLights();
 
 	forward_ = backward = false;
 	strafeL = strafeR = false;
@@ -85,12 +83,11 @@ void init( void )
 	camMatLoc = glGetUniformLocation( program, "camM");
 	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
 
-	world.getActors()->at(0).generateBuffers();
-	world.getActors()->at(1).generateBuffers();
-	world.getActors()->at(0).loadTexture("img/subwaycar.png");
-	world.getActors()->at(1).loadTexture("img/art.png");
-	world.getActors()->at(0).addChild(&(world.getActors()->at(1)));
-	world.getActors()->at(1).setPosition(vec3(0.0, 0.0, 2.0));
+	world.getActors()->at(0)->generateBuffers();
+	world.getActors()->at(1)->generateBuffers();
+	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
+	world.getActors()->at(1)->loadTexture("img/art.png");
+	//world.getActors()->at(0)->addChild(&(world.getActors()->at(1)));
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -99,7 +96,7 @@ void init( void )
 
 void display( void )
 {
-
+  
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// transform the camera position based on the rotation and the velocity
@@ -116,7 +113,7 @@ void display( void )
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, transformation );
 
-	world.getActors()->at(0).setRotation(vec3(delta, 0, 0));
+	world.getActors()->at(0)->setRotation(vec3(delta, 0, 0));
 
 	world.drawActors();
 

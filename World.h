@@ -9,12 +9,12 @@ using std::vector;
 class World
 {
  private:
-  vector<ModelObject> actors;
+  vector<ModelObject*> actors;
   
  public:
   World();
   void drawActors();
-  vector<ModelObject>* getActors();
+  vector<ModelObject*>* getActors();
   void addActor( ModelObject *newActor );
 
 };

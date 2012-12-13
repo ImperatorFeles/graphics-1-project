@@ -88,22 +88,23 @@ void ModelObject::generateBuffers()
 	//Send additional data to the shader
 	matLoc = glGetUniformLocation(program, "m");
 	samplerLoc = glGetUniformLocation(program, "gSampler");
-
+	
+	cout << vao << endl;
 	glBindVertexArray(0);
 }
 
 void ModelObject::draw()
 {
-	glBindVertexArray(vao);
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glUniformMatrix4fv( matLoc, 1, true, getTransformationMatrix() );
-	glUniform1i( samplerLoc, 0 );
-
-	glDrawArrays( GL_TRIANGLES, 0, vertices.size() );
-
-	glBindVertexArray(0);
+  glBindVertexArray(vao);
+  
+  glBindTexture(GL_TEXTURE_2D, texture);
+  
+  glUniformMatrix4fv( matLoc, 1, true, getTransformationMatrix() );
+  glUniform1i( samplerLoc, 0 );
+  
+  glDrawArrays( GL_TRIANGLES, 0, vertices.size() );
+  
+  glBindVertexArray(0);
 }
 
 void ModelObject::loadTexture(string filename)

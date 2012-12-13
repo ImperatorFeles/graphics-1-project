@@ -5,16 +5,16 @@ World::World()
 }
 void World::drawActors()
 {
-  vector<ModelObject>::iterator iter;
+  vector<ModelObject*>::iterator iter;
   for( iter = actors.begin(); iter != actors.end(); iter++ ) {
-    (*iter).draw();
+    (*iter)->draw();
   }
 }
-vector<ModelObject>* World::getActors()
+vector<ModelObject*>* World::getActors()
 {
   return &actors;
 }
 void World::addActor( ModelObject* newActor )
 {
-  actors.push_back( *newActor );
+  actors.push_back( newActor );
 }

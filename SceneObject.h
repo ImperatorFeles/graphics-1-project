@@ -39,6 +39,8 @@ class SceneObject
 		// add child to list of children
 		void addChild(SceneObject *child);
 
+		string getName();
+
 	private:
 
 		// set this scene object's parent

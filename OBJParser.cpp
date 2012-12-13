@@ -42,16 +42,16 @@ vector<string>* OBJParser::split(string str, char delim)
    correctly parsed
    vertices, normals, vertex elements, and normal elements will be returned to pointers to vectors
  */
-vector<ModelObject>* OBJParser::load_obj(const char* filename)
+void OBJParser::load_obj(const char* filename, World& theWorld)
 {
-		// file input stream
-	ifstream in(filename, ios::in);
-
+  // file input stream
+  ifstream in(filename, ios::in);
+  
 	if (!in)
-	{
-		cerr << "Cannot open " << filename << endl;
-		exit(1);
-	}
+	  {
+	    cerr << "Cannot open " << filename << endl;
+	    exit(1);
+	  }
 	
 	bool firstObject = true;
 
@@ -62,9 +62,7 @@ vector<ModelObject>* OBJParser::load_obj(const char* filename)
 	vector<vec2> raw_textureUVs;
 	vector<vec2> textureUVs;
 
-	vector<ModelObject> *objects = new vector<ModelObject>;
-
-	string line;
+      	string line;
 	string objName;
 
 	// parse the .obj file for its data
@@ -96,7 +94,7 @@ vector<ModelObject>* OBJParser::load_obj(const char* filename)
 				continue;
 			}
 
-			objects->push_back(*new ModelObject(objName, vertices, normals, textureUVs));
+			theWorld.addActor(new ModelObject(objName, vertices, normals, textureUVs));
 
 			vertices.clear();
 			normals.clear();
@@ -144,9 +142,8 @@ vector<ModelObject>* OBJParser::load_obj(const char* filename)
 		else { /* blank/junk */ }
 	}
 
-	objects->push_back(*new ModelObject(objName, vertices, normals, textureUVs));
+	theWorld.addActor(new ModelObject(objName, vertices, normals, textureUVs));
 
-	return objects;
 }
 
 vec4* OBJParser::parseVertex(string line)

@@ -4,6 +4,7 @@
 #include "ModelObject.h"
 #include "LightObject.h"
 #include "OBJParser.h"
+#include "World.h"
 #include "SOIL.h"
 
 #include <iostream>
@@ -27,8 +28,8 @@ mat4 transformation;
 GLuint camMatLoc;
 GLuint perspectiveMatLoc;
 
-//Vector of ModelObjects in the scene
-vector<ModelObject> *objects;
+//Get the world ready
+World world = World();
 
 // camera movement directions
 bool forward_, backward;
@@ -61,14 +62,10 @@ void init( void )
 
 	glEnable(GL_DEPTH_TEST);
 
-	vector<ModelObject> *art = OBJParser::load_obj("models/art.obj");
+	OBJParser::load_obj("models/subwaycar-done.obj", world);
+	OBJParser::load_obj("models/art.obj", world);
 
-	objects = OBJParser::load_obj("models/subwaycar-done.obj");
-
-
-	cout << objects->size() << endl;
-
-	objects->insert(objects->end(), art->begin(), art->end());
+	cout << world.getActors()->size() << endl;
 
 	initLights();
 
@@ -88,12 +85,12 @@ void init( void )
 	camMatLoc = glGetUniformLocation( program, "camM");
 	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
 
-	objects->at(0).generateBuffers();
-	objects->at(1).generateBuffers();
-	objects->at(0).loadTexture("img/subwaycar.png");
-	objects->at(1).loadTexture("img/art.png");
-	objects->at(0).addChild(&(objects->at(1)));
-	objects->at(1).setPosition(vec3(0.0, 0.0, 2.0));
+	world.getActors()->at(0).generateBuffers();
+	world.getActors()->at(1).generateBuffers();
+	world.getActors()->at(0).loadTexture("img/subwaycar.png");
+	world.getActors()->at(1).loadTexture("img/art.png");
+	world.getActors()->at(0).addChild(&(world.getActors()->at(1)));
+	world.getActors()->at(1).setPosition(vec3(0.0, 0.0, 2.0));
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -119,13 +116,9 @@ void display( void )
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, transformation );
 
-	objects->at(0).setRotation(vec3(delta, 0, 0));
+	world.getActors()->at(0).setRotation(vec3(delta, 0, 0));
 
-	for (vector<ModelObject>::iterator iter = objects->begin(); 
-			iter != objects->end(); ++iter)
-	{
-		(*iter).draw();
-	}
+	world.drawActors();
 
 	glFlush();
 }
@@ -244,7 +237,7 @@ void idle()
 		cameraVel.y = 0;
 	}
 
-	delta += 1;
+	delta += 0.2;
 
 	// make sure rotation does not grow infinitely
 	if (cameraRot.y > 360)

@@ -73,6 +73,11 @@ void SceneObject::setParent(SceneObject *parent)
 	this->parent = parent;
 }
 
+string SceneObject::getName()
+{
+  return objName;
+}
+
 void SceneObject::createMatrix()
 {
 	ctm = Angel::identity();

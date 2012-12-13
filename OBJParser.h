@@ -7,6 +7,7 @@
 
 #include "vec.h"
 #include "ModelObject.h"
+#include "World.h"
 
 using namespace std;
 
@@ -16,8 +17,7 @@ namespace OBJParser
 	vector<string>* split(string str, char delim);
 
 	// loads the .obj file into a ModelObject object
-	vector<ModelObject>* load_obj(const char* filename);
-
+	void load_obj(const char* filename, World& theWorld);
 
 	// parses a vertex's coordinates from an .obj line
 	vec4* parseVertex(string line);

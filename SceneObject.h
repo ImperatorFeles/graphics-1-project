@@ -5,8 +5,10 @@
 #include "mat.h"
 
 #include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 class SceneObject
 {
@@ -14,6 +16,8 @@ class SceneObject
 		string objName; // name of the object as defined by the file
 		vec3 position, rotation, scale;
 		mat4 ctm; // current transformation matrix
+		SceneObject *parent;
+		vector<SceneObject*> children;
 
 	public:
 		// for creating an object where position, rotation, scale are unused
@@ -32,7 +36,14 @@ class SceneObject
 		// returns the current transformation matrix for this object
 		mat4 getTransformationMatrix();
 
+		// add child to list of children
+		void addChild(SceneObject *child);
+
 	private:
+
+		// set this scene object's parent
+		void setParent(SceneObject *parent);
+
 		// creates the ctm
 		void createMatrix();
 

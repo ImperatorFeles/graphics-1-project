@@ -11,6 +11,7 @@ varying vec2 outtexture;
 
 uniform mat4 m;
 uniform mat4 camM;
+uniform mat4 perspective;
 
 void main()
 {
@@ -24,6 +25,6 @@ void main()
 
 	outtexture = vTexture;
 
-   	gl_Position = (camM + m) *  vPosition;
+   	gl_Position = perspective * camM * m * vPosition;
 	color = vec4(vColor, 1);
 }

@@ -3,12 +3,16 @@
 #include "mat.h"
 
 #include <string>
+#include <iostream>
 
 using std::string;
+using std::cout;
+using std::endl;
 
 SceneObject::SceneObject(string objName):
 		objName(objName),
-		position(0), rotation(0), scale(0)
+		position(0), rotation(0), scale(1),
+		parent(NULL)
 {
 	createMatrix();
 }
@@ -17,14 +21,17 @@ SceneObject::SceneObject(string objName, vec3 position):
 		objName(objName),
 		position(position),
 		rotation(0),
-		scale(0)
+		scale(1),
+		parent(NULL)
 {
 	createMatrix();
 }
 
 SceneObject::SceneObject(string objName, vec3 position, vec3 rotation,
 						 vec3 scale):
-		objName(objName), position(position), rotation(rotation), scale(scale)
+		objName(objName),
+		position(position), rotation(rotation), scale(scale),
+		parent(NULL)
 {
 	createMatrix();
 }
@@ -55,11 +62,50 @@ mat4 SceneObject::getTransformationMatrix()
 	return ctm;
 }
 
+void SceneObject::addChild(SceneObject *child)
+{
+	children.push_back(child);
+	child->setParent(this);
+}
+
+void SceneObject::setParent(SceneObject *parent)
+{
+	this->parent = parent;
+}
+
 void SceneObject::createMatrix()
 {
-	ctm = Translate(position.x, position.y, position.z);
+	ctm = Angel::identity();
+
+	// if we have a parent, we have to have this object's
+	// coordinates be the local to the parent's coordinates
+	// and we have to apply the parent's ctm to our ctm
+	if (parent != NULL)
+	{
+		ctm = Translate(parent->position.x, 
+				parent->position.y, parent->position.z);
+		
+		ctm = ctm * parent->getTransformationMatrix();
+	}
+
+	// create our ctm
+	ctm = ctm * Translate(position.x, position.y, position.z);
 	ctm = ctm * RotateX(rotation.x);
 	ctm = ctm * RotateY(rotation.y);
 	ctm = ctm * RotateZ(rotation.z);
 	ctm = ctm * Scale(scale.x, scale.y, scale.z);
+	
+	// if we have a parent, go back to world coordinates
+	if (parent != NULL)
+	{
+		ctm = ctm * Translate(-(parent->position.x), 
+			-(parent->position.y), -(parent->position.z));
+	}
+
+	// tell children to update their matrices
+	for (vector<SceneObject*>::iterator iter = children.begin();
+			iter != children.end(); ++iter)
+	{
+		(*iter)->createMatrix();
+	}
 }

@@ -16,6 +16,8 @@ class ModelObject : public SceneObject
 		vector<vec2> textureUVs; // stores UV coordinates for faces
 		GLuint samplerLoc; // texture sampler location in shader
 		GLuint matLoc; // matrix location in shader
+		GLuint texture; // handle to loaded texture
+		GLuint vao; // handle to the array object
 
 	public:
 		// create model object without position, rotation, scale
@@ -31,6 +33,7 @@ class ModelObject : public SceneObject
 		// methods for buffering and for drawing
 		void generateBuffers();
 		void draw();
+		void loadTexture(string filename);
 };
 
 #endif

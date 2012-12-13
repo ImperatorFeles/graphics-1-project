@@ -79,6 +79,7 @@ vector<ModelObject>* OBJParser::load_obj(const char* filename)
 		// 'o ' or 'g ' signify a new object is starting
 		else if (line.substr(0, 1) == "o" || line.substr(0, 1) == "g")
 		{
+
 			if (line.substr(1).compare("") == 0)
 			{
 				objName = "Unnamed Object";

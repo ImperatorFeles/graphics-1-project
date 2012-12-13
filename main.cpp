@@ -11,17 +11,21 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <ctime>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.005
+#define MOVEMENT_SPEED 0.05
 
 vec4 cameraPos; // position of camera
 vec3 cameraRot; // rotation of camera
 vec4 cameraVel; // velocity of camera
 
+float delta;
+
 // current transformation matrix
 mat4 transformation;
 GLuint camMatLoc;
+GLuint perspectiveMatLoc;
 
 //Vector of ModelObjects in the scene
 vector<ModelObject> *objects;
@@ -45,28 +49,26 @@ void initLights( void ) {
   vec3 lightPos0 = vec3( 0.0, 5.0, 0.0 );
   vec4 lightDiff0 = vec4 (0.1f, 0.1f, 0.1f, 1.0f );
   vec4 lightSpec0 = vec4 (1.0f, 1.0f, 1.0f, 1.0f );
-  LightObject lightObj0 = LightObject("Light1", lightDiff0, lightSpec0, 0.5, lightPos0);
 
 }
 
 void init( void )
 {
-	GLuint tex2d = SOIL_load_OGL_texture("img/subwaycar.png", 
-			SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID,
-			SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT);
-
-	if (!tex2d)
-	{
-		cout << "Failed to load texture file";
-		exit(0);
-	}
-
 	//Fixes GlutMouseWarpPointer on Mac, thanks to John Huston and Chris Compton
 #ifdef __APPLE__
 	CGSetLocalEventsSuppressionInterval( 0.0 );
 #endif
 
+	glEnable(GL_DEPTH_TEST);
+
+	vector<ModelObject> *art = OBJParser::load_obj("models/art.obj");
+
 	objects = OBJParser::load_obj("models/subwaycar-done.obj");
+
+
+	cout << objects->size() << endl;
+
+	objects->insert(objects->end(), art->begin(), art->end());
 
 	initLights();
 
@@ -76,26 +78,22 @@ void init( void )
 
 	//Set initial camera position backwards from the (very large) model so it's all visible from the get-go
 	cameraPos = 0;
-	cameraPos.z = -10;
+	cameraPos.z = -5;
 	cameraRot = 0;
-
-	//Can use a call like this to move the object before it's drawn
-	//objects->at(0).setPosition( vec3(0.0,0.0,0.0) );
 
 	transformation = *new mat4();
 
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 	camMatLoc = glGetUniformLocation( program, "camM");
-
-	// send texture information to GPU
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex2d);
-	glEnable(GL_TEXTURE_2D);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
 
 	objects->at(0).generateBuffers();
+	objects->at(1).generateBuffers();
+	objects->at(0).loadTexture("img/subwaycar.png");
+	objects->at(1).loadTexture("img/art.png");
+	objects->at(0).addChild(&(objects->at(1)));
+	objects->at(1).setPosition(vec3(0.0, 0.0, 2.0));
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -104,6 +102,7 @@ void init( void )
 
 void display( void )
 {
+
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// transform the camera position based on the rotation and the velocity
@@ -114,13 +113,19 @@ void display( void )
 	// build the transformation matrix
 	transformation = Angel::identity();
 
-	transformation = transformation * Perspective(60, 1.0, 0.01, 100);      
 	transformation = transformation * RotateX(cameraRot.x) * RotateY(cameraRot.y);
 	transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
 
+	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, transformation );
 
-	objects->at(0).draw();
+	objects->at(0).setRotation(vec3(delta, 0, 0));
+
+	for (vector<ModelObject>::iterator iter = objects->begin(); 
+			iter != objects->end(); ++iter)
+	{
+		(*iter).draw();
+	}
 
 	glFlush();
 }
@@ -238,6 +243,8 @@ void idle()
 	{
 		cameraVel.y = 0;
 	}
+
+	delta += 1;
 
 	// make sure rotation does not grow infinitely
 	if (cameraRot.y > 360)

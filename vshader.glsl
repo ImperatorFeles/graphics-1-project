@@ -1,30 +1,50 @@
+struct Light {
+	vec4 diff;
+	vec4 ambi;
+	vec4 spec;
+	vec4 position;
+};
+
+// Inputs from models buffer
 attribute vec4 vPosition;
 attribute vec3 vColor;
 attribute vec3 vNormal;
 attribute vec2 vTexture;
 
-varying vec4 color;
+varying vec2 texcoord;
+varying vec4 pcolor;
 
-varying vec4 lightDiff;
-
-varying vec2 outtexture;
-
-uniform mat4 m;
-uniform mat4 camM;
+uniform mat4 modeltransform;
+uniform mat4 modelview;
 uniform mat4 perspective;
 
-void main()
-{
-	vec3 vertex_normal = normalize(gl_NormalMatrix * vNormal);
-	vec3 vertex_light_pos0 = gl_LightSource[0].position.xyz;
-	vec3 vertex_light_pos1 = gl_LightSource[1].position.xyz;
+uniform float shininess;
+uniform Light inLight;
 
-	vec4 light0Diff = gl_LightSource[0].diffuse * max(dot(vertex_normal, vertex_light_pos0), 0.0);
-	vec4 light1Diff = gl_LightSource[1].diffuse * max(dot(vertex_normal, vertex_light_pos1), 0.0);
-	lightDiff = light0Diff + light1Diff;
+void main() {
+	vec3 pos = -(modelview * vPosition).xyz;
 
-	outtexture = vTexture;
+	vec3 L = normalize(inLight.position.xyz - pos);
+	vec3 E = normalize(-pos);
+	vec3 H = normalize(L + E);
 
-   	gl_Position = perspective * camM * m * vPosition;
-	color = vec4(vColor, 1);
+	vec3 N = normalize(modelview * vec4(vNormal, 1.0)).xyz;
+
+	vec4 ambient = inLight.ambi;
+
+	float Kd = max(dot(L, N), 0.0);
+	vec4 diffuse = Kd * inLight.diff;
+
+	float Ks = pow(max(dot(N, H), 0.0), shininess);
+	vec4 specular = Ks * inLight.spec;
+
+	if (dot(L, N) < 0.0)
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+
+	texcoord = vTexture;
+
+   	gl_Position = perspective * modelview * modeltransform * vPosition;
+	
+	pcolor = ambient + specular + diffuse;
+	pcolor.a = 1.0;
 }

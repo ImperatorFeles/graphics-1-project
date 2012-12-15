@@ -42,7 +42,7 @@ void ModelObject::generateBuffers()
 	vector<vec3> colors;
 	colors.resize( vertices.size() );
 	for( unsigned int i = 0; i < vertices.size(); i++ ) {
-		colors[i] = vec3( 1.0, 1.0, 1.0 );
+		colors[i] = vec3( 1.0, 1.0, 0.0 );
 	}
 
 	//Initialize the shaders to use
@@ -86,7 +86,7 @@ void ModelObject::generateBuffers()
 	glVertexAttribPointer( vTexture, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
 	//Send additional data to the shader
-	matLoc = glGetUniformLocation(program, "m");
+	matLoc = glGetUniformLocation(program, "modeltransform");
 	samplerLoc = glGetUniformLocation(program, "gSampler");
 	
 	cout << vao << endl;

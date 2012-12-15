@@ -38,19 +38,51 @@ bool up, down;
 
 using namespace std;
 
-/*
-   Initialize lights for the scene
-   Defines initial positions and colors
- */
-void initLights( void ) {
 
-  glEnable(GL_LIGHTING);
-  
-  //Initial positions
-  vec3 lightPos0 = vec3( 0.0, 5.0, 0.0 );
-  vec4 lightDiff0 = vec4 (0.1f, 0.1f, 0.1f, 1.0f );
-  vec4 lightSpec0 = vec4 (1.0f, 1.0f, 1.0f, 1.0f );
+struct Light_Info {
+	struct {
+		GLint diffid,
+			  ambiid,
+			  specid,
+			  posid;
+	} id;
+	struct {
+		vec4 diff,
+			 ambi,
+			 spec,
+			 pos;
+	} values;
+} test_light;
+struct Material_Properties {
+	GLint shinyid;
+	struct {	
+		vec4 diff,
+			 ambi,
+			 spec;
+		GLfloat shinyness;
+	} values;
+} MatProp;
 
+void init_lights(GLuint program) {
+	test_light.id.diffid = glGetUniformLocation(program, "inLight.diff");
+	test_light.id.ambiid = glGetUniformLocation(program, "inLight.ambi");
+	test_light.id.specid = glGetUniformLocation(program, "inLight.spec");
+	test_light.id.posid  = glGetUniformLocation(program, "inLight.position"); 
+
+	test_light.values.ambi = vec4(0.2, 0.2, 0.3, 1.0);
+	test_light.values.diff = vec4(1.0, 1.0, 1.0, 1.0);
+	test_light.values.spec = vec4(1.0, 0.8, 1.0, 1.0);
+	test_light.values.pos  = vec4(0.0, 0.0, 5.0, 1.0);
+
+	MatProp.shinyid = glGetUniformLocation(program, "shinyness");
+	MatProp.values.shinyness = 100;
+	MatProp.values.diff = vec4(1.0, 0.0, 1.0, 1.0);
+	MatProp.values.ambi = vec4(1.0, 0.0, 0.0, 1.0);
+	MatProp.values.spec = vec4(1.0, 0.8, 0.0, 1.0);
+
+	test_light.values.ambi *= MatProp.values.ambi;
+	test_light.values.diff *= MatProp.values.diff;
+	test_light.values.spec *= MatProp.values.spec;
 }
 
 void init( void )
@@ -65,8 +97,6 @@ void init( void )
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
 	OBJParser::load_obj("models/art.obj", world);
 
-	//	initLights();
-
 	forward_ = backward = false;
 	strafeL = strafeR = false;
 	up = down = false;
@@ -80,7 +110,10 @@ void init( void )
 
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
-	camMatLoc = glGetUniformLocation( program, "camM");
+
+	init_lights(program);
+	 
+	camMatLoc = glGetUniformLocation( program, "modelview");
 	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
 
 	world.getActors()->at(0)->generateBuffers();
@@ -113,7 +146,12 @@ void display( void )
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, transformation );
 
-	world.getActors()->at(0)->setRotation(vec3(delta, 0, 0));
+	glUniform4fv(test_light.id.diffid, 1, test_light.values.diff);
+	glUniform4fv(test_light.id.ambiid, 1, test_light.values.ambi);
+	glUniform4fv(test_light.id.specid, 1, test_light.values.spec);
+	glUniform4fv(test_light.id.posid,  1, test_light.values.pos);
+	
+	glUniform1f(MatProp.shinyid, MatProp.values.shinyness);
 
 	world.drawActors();
 
@@ -123,7 +161,7 @@ void display( void )
 void keyboard( unsigned char key, int x, int y )
 {
 	switch ( key ) {
-		case 033:
+		case 033: case 'q': case 'Q':
 			exit( EXIT_SUCCESS );
 			break;
 		case 'w':

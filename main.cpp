@@ -30,7 +30,7 @@ World world = World();
 
 // object that stores camera data
 CameraObject camera = CameraObject("cam1", MOVEMENT_SPEED, MOUSE_SENSITIVITY,
-		vec3(0.0, 0.0, -5.0), vec3(0));
+		vec3(1.0, -3.0, 0.0), vec3(0));
 
 using namespace std;
 
@@ -94,7 +94,6 @@ void init( void )
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
-	OBJParser::load_obj("models/art.obj", world);
 	OBJParser::load_obj("models/stations.obj", world);
 
 	transformation = *new mat4();
@@ -109,11 +108,12 @@ void init( void )
 
 	world.getActors()->at(0)->generateBuffers();
 	world.getActors()->at(1)->generateBuffers();
-	world.getActors()->at(2)->generateBuffers();
 	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
-	world.getActors()->at(1)->loadTexture("img/art.png");
-	world.getActors()->at(2)->loadTexture("img/stations.png");
-	//world.getActors()->at(0)->addChild(&(world.getActors()->at(1)));
+	world.getActors()->at(1)->loadTexture("img/stations.png");
+	world.getActors()->at(0)->setRotation(vec3(0.0, 90.0, 0.0));
+	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -2.0));
+	world.getActors()->at(1)->setScale(vec3(0.4));
+	world.getActors()->at(0)->addChild(&camera);
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -123,6 +123,8 @@ void init( void )
 void display( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -2.0 - delta / 2.0));
 
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );

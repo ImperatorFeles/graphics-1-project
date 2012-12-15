@@ -58,6 +58,21 @@ void SceneObject::setScale(vec3 scale)
 	createMatrix();
 }
 
+vec3 SceneObject::getPosition()
+{
+	return position;
+}
+
+vec3 SceneObject::getRotation()
+{
+	return rotation;
+}
+
+vec3 SceneObject::getScale()
+{
+	return scale;
+}
+
 mat4 SceneObject::getTransformationMatrix()
 {
 	return ctm;
@@ -72,7 +87,6 @@ void SceneObject::addChild(SceneObject *child)
 void SceneObject::setParent(SceneObject *parent)
 {
 	this->parent = parent;
-	cout << "I am becoming a children " << parent << endl;
 }
 
 string SceneObject::getName()

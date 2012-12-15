@@ -14,16 +14,13 @@ class SceneObject
 {
 	private:
 		string objName; // name of the object as defined by the file
+	protected:
 		SceneObject *parent;
 		vector<SceneObject*> children;
 
-	protected:
 		vec3 position, rotation, scale;
 		
 		mat4 ctm; // current transformation matrix
-
-		// creates the ctm
-		virtual void createMatrix();
 
 	public:
 		// for creating an object where position, rotation, scale are unused
@@ -39,8 +36,15 @@ class SceneObject
 		void setRotation(vec3 rotation);
 		void setScale(vec3 scale);
 
+		vec3 getPosition();
+		vec3 getRotation();
+		vec3 getScale();
+
 		// returns the current transformation matrix for this object
 		mat4 getTransformationMatrix();
+
+		// creates the ctm
+		virtual void createMatrix();
 
 		// add child to list of children
 		void addChild(SceneObject *child);

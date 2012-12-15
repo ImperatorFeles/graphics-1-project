@@ -140,18 +140,32 @@ void CameraObject::setLockedXRot(bool lock)
 
 void CameraObject::createMatrix()
 {
+	ctm = Angel::identity();
+	vec4 tempPos = vec4(position, 1);
+
 	// update position based on rotation
 	mat4 tempMat = Angel::identity();
-	vec4 tempPos = vec4(position, 1);
 	tempMat = tempMat * RotateY(-rotation.y) * RotateX(-rotation.x);
 	tempPos = tempPos + tempMat * velocity;
 	position.x = tempPos.x;
 	position.y = tempPos.y;
 	position.z = tempPos.z;
 
-	// update matrix as usual
-	ctm = Angel::identity();
-	ctm = ctm * RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z);
-	ctm = ctm * Translate(position);
+	// change a temporary position based on the parent's position
+	if (parent != NULL)
+	{
+		tempPos += vec4(parent->getPosition().x, parent->getPosition().y, -parent->getPosition().z, 1);
+	}
 
+	// update matrix as usual
+	ctm = ctm * RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z);
+	ctm = ctm * Translate(tempPos.x, tempPos.y, tempPos.z);
+
+
+	// tell children to update their matrices
+	for (vector<SceneObject*>::iterator iter = children.begin();
+			iter != children.end(); ++iter)
+	{
+		(*iter)->createMatrix();
+	}
 }

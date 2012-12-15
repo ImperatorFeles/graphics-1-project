@@ -42,7 +42,7 @@ void ModelObject::generateBuffers()
 	vector<vec3> colors;
 	colors.resize( vertices.size() );
 	for( unsigned int i = 0; i < vertices.size(); i++ ) {
-		colors[i] = vec3( 1.0, 1.0, 0.0 );
+		colors[i] = vec3( 1.0, 1.0, 1.0 );
 	}
 
 	//Initialize the shaders to use

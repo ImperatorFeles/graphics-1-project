@@ -54,6 +54,7 @@ public:
 	LightObject();
 	LightObject(string objName, vec3 position, LightInfo info);
 
+	void setLightIndex(GLint index);
 	void bindLight(GLint program);
 	void setValues();
 

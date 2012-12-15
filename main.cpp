@@ -88,6 +88,7 @@ void init( void )
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 
+	Light.setLightIndex(0);
 	Light.bindLight(program);
 	 
 	camMatLoc = glGetUniformLocation( program, "modelview");

@@ -15,6 +15,10 @@ LightObject::LightObject(string objName, vec3 position, LightInfo info) :
 	// Nothing			
 }
 
+void LightObject::setLightIndex(GLint index) {
+	info.lightIndex = index;	
+}
+
 void LightObject::bindLight(GLint program) {
 	char str[80];
 	
@@ -43,10 +47,10 @@ void LightObject::bindLight(GLint program) {
 }
 
 void LightObject::setValues() {
-	glUniform1fv(info.ids.ambient_id, 1, info.values.ambient);
-	glUniform1fv(info.ids.diffuse_id, 1, info.values.diffuse);
-	glUniform1fv(info.ids.specular_id, 1, info.values.specular);
-	glUniform1fv(info.ids.position_id, 1, SceneObject::position);
+	glUniform4fv(info.ids.ambient_id, 1, info.values.ambient);
+	glUniform4fv(info.ids.diffuse_id, 1, info.values.diffuse);
+	glUniform4fv(info.ids.specular_id, 1, info.values.specular);
+	glUniform3fv(info.ids.position_id, 1, SceneObject::position);
 
 	// TODO: Add more bindings
 }

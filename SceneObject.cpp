@@ -130,3 +130,4 @@ void SceneObject::createMatrix()
 		(*iter)->createMatrix();
 	}
 }
+

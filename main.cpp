@@ -118,8 +118,6 @@ void display( void )
 	Light.setValues();
 	glUniform1f(MatProp.shinyid, MatProp.values.shinyness);
 
-
-
 	world.drawActors();
 
 	glFlush();
@@ -130,6 +128,9 @@ void keyboard( unsigned char key, int x, int y )
 	switch ( key ) {
 		case 033: case 'q': case 'Q':
 			exit( EXIT_SUCCESS );
+			break;
+		case 'l':
+			camera.removeParent();
 			break;
 		case 'w':
 			camera.setMoveForward(true);

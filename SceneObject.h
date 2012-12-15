@@ -49,12 +49,19 @@ class SceneObject
 		// add child to list of children
 		void addChild(SceneObject *child);
 
+		// remove this object's parent and have the parent remove it from
+		// it's children
+		void removeParent();
+
 		string getName();
 
 	private:
 
 		// set this scene object's parent
 		void setParent(SceneObject *parent);
+
+		// remove a specific child
+		void removeChild(SceneObject *child);
 };
 
 #endif

@@ -4,10 +4,12 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 using std::string;
 using std::cout;
 using std::endl;
+using std::remove;
 
 SceneObject::SceneObject(string objName):
 	objName(objName),
@@ -84,9 +86,20 @@ void SceneObject::addChild(SceneObject *child)
 	child->setParent(this);
 }
 
+void SceneObject::removeChild(SceneObject *child)
+{
+	remove(children.begin(), children.end(), child);
+}
+
 void SceneObject::setParent(SceneObject *parent)
 {
 	this->parent = parent;
+}
+
+void SceneObject::removeParent()
+{
+	parent->removeChild(this);
+	parent = NULL;
 }
 
 string SceneObject::getName()

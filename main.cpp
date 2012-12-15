@@ -32,22 +32,10 @@ World world = World();
 CameraObject camera = CameraObject("cam1", MOVEMENT_SPEED, MOUSE_SENSITIVITY,
 		vec3(0.0, 0.0, -5.0), vec3(0));
 
+LightObject Light;
+
 using namespace std;
 
-struct Light_Info {
-	struct {
-		GLint diffid,
-			  ambiid,
-			  specid,
-			  posid;
-	} id;
-	struct {
-		vec4 diff,
-			 ambi,
-			 spec,
-			 pos;
-	} values;
-} test_light;
 struct Material_Properties {
 	GLint shinyid;
 	struct {	
@@ -59,15 +47,11 @@ struct Material_Properties {
 } MatProp;
 
 void init_lights(GLuint program) {
-	test_light.id.diffid = glGetUniformLocation(program, "inLight.diff");
-	test_light.id.ambiid = glGetUniformLocation(program, "inLight.ambi");
-	test_light.id.specid = glGetUniformLocation(program, "inLight.spec");
-	test_light.id.posid  = glGetUniformLocation(program, "inLight.position"); 
+	LightInfo li;
 
-	test_light.values.ambi = vec4(0.2, 0.2, 0.3, 1.0);
-	test_light.values.diff = vec4(1.0, 1.0, 1.0, 1.0);
-	test_light.values.spec = vec4(1.0, 0.8, 1.0, 1.0);
-	test_light.values.pos  = vec4(0.0, 0.0, 5.0, 1.0);
+	li.values.ambient  = vec4(0.2, 0.2, 0.3, 1.0);
+	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
+	li.values.specular = vec4(1.0, 0.8, 1.0, 1.0);
 
 	MatProp.shinyid = glGetUniformLocation(program, "shinyness");
 	MatProp.values.shinyness = 100;
@@ -75,9 +59,11 @@ void init_lights(GLuint program) {
 	MatProp.values.ambi = vec4(1.0, 0.0, 0.0, 1.0);
 	MatProp.values.spec = vec4(1.0, 0.8, 0.0, 1.0);
 
-	test_light.values.ambi *= MatProp.values.ambi;
-	test_light.values.diff *= MatProp.values.diff;
-	test_light.values.spec *= MatProp.values.spec;
+	li.values.ambient  *= MatProp.values.ambi;
+	li.values.diffuse  *= MatProp.values.diff;
+	li.values.specular *= MatProp.values.spec;
+
+	Light = LightObject("Light0", vec3(15.0, 0.0, 0.0), li);
 }
 
 void init( void )
@@ -102,7 +88,7 @@ void init( void )
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 
-	init_lights(program);
+	Light.bindLight(program);
 	 
 	camMatLoc = glGetUniformLocation( program, "modelview");
 	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
@@ -126,13 +112,11 @@ void display( void )
 
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
-
-	glUniform4fv(test_light.id.diffid, 1, test_light.values.diff);
-	glUniform4fv(test_light.id.ambiid, 1, test_light.values.ambi);
-	glUniform4fv(test_light.id.specid, 1, test_light.values.spec);
-	glUniform4fv(test_light.id.posid,  1, test_light.values.pos);
 	
+	Light.setValues();
 	glUniform1f(MatProp.shinyid, MatProp.values.shinyness);
+
+
 
 	world.drawActors();
 

@@ -61,16 +61,16 @@ vec4 VertexLight() {
 }
 
 void main() {
+	int i = 0;
 
-	/*
 	N = vNormal.xyz;
 	L = Lights[i].position.xyz - -(perspective * vPosition).xyz;
-	if (Lights[i].position.w == 0.0) L = Lights[i].position.xyz;
 	E = vPosition.xyz;
-	*/
 
-	pcolor = VertexLight();
-	pcolor.a = 1.0;
+	//pcolor = VertexLight();
+	//pcolor.a = 1.0;
 	texcoord = vTexture;
    	gl_Position = perspective * modelview * modeltransform * vPosition;
+
+	pcolor = vec4(vColor, 1.0);
 }

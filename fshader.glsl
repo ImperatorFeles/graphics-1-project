@@ -51,7 +51,7 @@ vec4 FragLight() {
 }
 
 void main() {
-	//gl_FragColor = pcolor;	
+//	gl_FragColor = pcolor;	
 	gl_FragColor = pcolor * texture2D(gSampler, texcoord);
 
 	//gl_FragColor = pcolor * FragLight() * texture2D(gSampler, texcoord);

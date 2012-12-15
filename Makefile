@@ -2,7 +2,7 @@ GL_FLAGS=-lSOIL -lGL -lGLU -lglut -lGLEW
 MAC_FLAGS=-framework OpenGL -framework Glut -framework Carbon -lSOILMac
 C_FLAGS=-g -Wall
 DEPS=
-OBJ=main.o InitShader.o SceneObject.o ModelObject.o LightObject.o OBJParser.o World.o
+OBJ=main.o InitShader.o SceneObject.o ModelObject.o LightObject.o OBJParser.o World.o CameraObject.o
 UNAME := $(shell uname)
 
 %.o: %.cpp $(DEPS)

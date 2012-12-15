@@ -53,8 +53,6 @@ void ModelObject::generateBuffers()
 	glGenVertexArrays( 1, &vao );
 	glBindVertexArray( vao );
 
-	cout << glGetError() << endl;
-
 	//Create VBOs
 	GLuint vbos[4];
 	glGenBuffers( 4, vbos );
@@ -91,8 +89,6 @@ void ModelObject::generateBuffers()
 	matLoc = glGetUniformLocation(program, "modeltransform");
 	samplerLoc = glGetUniformLocation(program, "gSampler");
 	
-	cout << vao << endl;
-
 	glBindVertexArray(0);
 }
 

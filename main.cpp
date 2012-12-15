@@ -6,6 +6,7 @@
 #include "OBJParser.h"
 #include "World.h"
 #include "SOIL.h"
+#include "CameraObject.h"
 
 #include <iostream>
 #include <vector>
@@ -17,10 +18,6 @@
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.05
 
-vec4 cameraPos; // position of camera
-vec3 cameraRot; // rotation of camera
-vec4 cameraVel; // velocity of camera
-
 float delta;
 
 // current transformation matrix
@@ -31,13 +28,11 @@ GLuint perspectiveMatLoc;
 //Get the world ready
 World world = World();
 
-// camera movement directions
-bool forward_, backward;
-bool strafeL, strafeR;
-bool up, down;
+// object that stores camera data
+CameraObject camera = CameraObject("cam1", MOVEMENT_SPEED, MOUSE_SENSITIVITY,
+		vec3(0.0, 0.0, -5.0), vec3(0));
 
 using namespace std;
-
 
 struct Light_Info {
 	struct {
@@ -94,17 +89,13 @@ void init( void )
 
 	glEnable(GL_DEPTH_TEST);
 
+	// set up camera
+	camera.setLockedXRot(true);
+
+	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
 	OBJParser::load_obj("models/art.obj", world);
-
-	forward_ = backward = false;
-	strafeL = strafeR = false;
-	up = down = false;
-
-	//Set initial camera position backwards from the (very large) model so it's all visible from the get-go
-	cameraPos = 0;
-	cameraPos.z = -5;
-	cameraRot = 0;
+	OBJParser::load_obj("models/stations.obj", world);
 
 	transformation = *new mat4();
 
@@ -118,8 +109,10 @@ void init( void )
 
 	world.getActors()->at(0)->generateBuffers();
 	world.getActors()->at(1)->generateBuffers();
+	world.getActors()->at(2)->generateBuffers();
 	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
 	world.getActors()->at(1)->loadTexture("img/art.png");
+	world.getActors()->at(2)->loadTexture("img/stations.png");
 	//world.getActors()->at(0)->addChild(&(world.getActors()->at(1)));
 
 	glEnable( GL_DEPTH_TEST );
@@ -129,22 +122,10 @@ void init( void )
 
 void display( void )
 {
-  
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	// transform the camera position based on the rotation and the velocity
-	transformation = Angel::identity();
-	transformation = transformation  * RotateY(-cameraRot.y) * RotateX(-cameraRot.x);
-	cameraPos = cameraPos + transformation * cameraVel;
-
-	// build the transformation matrix
-	transformation = Angel::identity();
-
-	transformation = transformation * RotateX(cameraRot.x) * RotateY(cameraRot.y);
-	transformation = transformation * Translate(cameraPos.x, cameraPos.y, cameraPos.z);
-
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
-	glUniformMatrix4fv( camMatLoc, 1, true, transformation );
+	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
 
 	glUniform4fv(test_light.id.diffid, 1, test_light.values.diff);
 	glUniform4fv(test_light.id.ambiid, 1, test_light.values.ambi);
@@ -165,22 +146,22 @@ void keyboard( unsigned char key, int x, int y )
 			exit( EXIT_SUCCESS );
 			break;
 		case 'w':
-			forward_ = true;
+			camera.setMoveForward(true);
 			break;
 		case 's':
-			backward = true;
+			camera.setMoveBackward(true);
 			break;
 		case 'd':
-			strafeR = true;
+			camera.setMoveRight(true);
 			break;
 		case 'a':
-			strafeL = true;
+			camera.setMoveLeft(true);
 			break;
 		case 'r':
-			up = true;
+			camera.setMoveUp(true);
 			break;
 		case 'f':
-			down = true;
+			camera.setMoveDown(true);
 			break;
 	}
 }
@@ -190,22 +171,22 @@ void keyboardUp(unsigned char key, int x, int y)
 	switch (key)
 	{
 		case 'w':
-			forward_ = false;
+			camera.setMoveForward(false);
 			break;
 		case 's':
-			backward = false;
+			camera.setMoveBackward(false);
 			break;
 		case 'd':
-			strafeR = false;
+			camera.setMoveRight(false);
 			break;
 		case 'a':
-			strafeL = false;
+			camera.setMoveLeft(false);
 			break;
 		case 'r':
-			up = false;
+			camera.setMoveUp(false);
 			break;
 		case 'f':
-			down = false;
+			camera.setMoveDown(false);
 			break;
 	}
 }
@@ -216,13 +197,8 @@ void passiveMotion(int x, int y)
 	// make sure we're not in the center
 	if (x != 255 || y != 255)
 	{
-		cameraRot.y -= (255 - x) * MOUSE_SENSITIVITY;
-
-		// lock the up and down look to no more than 90 degrees
-		if (cameraRot.x - (255 - y) * MOUSE_SENSITIVITY <= 90 && cameraRot.x - (255 - y) * MOUSE_SENSITIVITY >= -90)
-		{
-			cameraRot.x -= (255 - y) * MOUSE_SENSITIVITY;
-		}
+		camera.addYRot(-(255 - x));
+		camera.addXRot(-(255 - y));
 
 		glutWarpPointer(255, 255);
 	}
@@ -234,51 +210,9 @@ void motion(int x, int y)
 
 void idle()
 {
-	// set the velocity based on which direction we're going
-	if (forward_)
-	{
-		cameraVel.z = MOVEMENT_SPEED;
-	}
-	else if (backward)
-	{
-		cameraVel.z = -MOVEMENT_SPEED;
-	}
-	else
-	{
-		cameraVel.z = 0;
-	}
-	if (strafeL)
-	{
-		cameraVel.x = MOVEMENT_SPEED;
-	}
-	else if (strafeR)
-	{
-		cameraVel.x = -MOVEMENT_SPEED;
-	}
-	else
-	{
-		cameraVel.x = 0;
-	}
-	if (up)
-	{
-		cameraVel.y = -MOVEMENT_SPEED;
-	}
-	else if (down)
-	{
-		cameraVel.y = MOVEMENT_SPEED;
-	}
-	else
-	{
-		cameraVel.y = 0;
-	}
+	camera.update();
 
 	delta += 0.2;
-
-	// make sure rotation does not grow infinitely
-	if (cameraRot.y > 360)
-	{
-		cameraRot.y -= 360;
-	}
 
 	glutPostRedisplay(); 
 }

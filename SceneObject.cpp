@@ -10,19 +10,20 @@ using std::cout;
 using std::endl;
 
 SceneObject::SceneObject(string objName):
-		objName(objName),
-		position(0), rotation(0), scale(1),
-		parent(NULL)
+	objName(objName),
+	parent(NULL),
+	position(0), rotation(0), scale(1)
+	
 {
 	createMatrix();
 }
 
 SceneObject::SceneObject(string objName, vec3 position):
 		objName(objName),
+		parent(NULL),
 		position(position),
 		rotation(0),
-		scale(1),
-		parent(NULL)
+		scale(1)
 {
 	createMatrix();
 }
@@ -30,8 +31,8 @@ SceneObject::SceneObject(string objName, vec3 position):
 SceneObject::SceneObject(string objName, vec3 position, vec3 rotation,
 						 vec3 scale):
 		objName(objName),
-		position(position), rotation(rotation), scale(scale),
-		parent(NULL)
+		parent(NULL),
+		position(position), rotation(rotation), scale(scale)
 {
 	createMatrix();
 }
@@ -71,6 +72,7 @@ void SceneObject::addChild(SceneObject *child)
 void SceneObject::setParent(SceneObject *parent)
 {
 	this->parent = parent;
+	cout << "I am becoming a children " << parent << endl;
 }
 
 string SceneObject::getName()

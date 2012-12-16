@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include <ctime>
+#include <cstdio>
 
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.1
@@ -32,7 +33,7 @@ World world = World();
 CameraObject camera = CameraObject("cam1", MOVEMENT_SPEED, MOUSE_SENSITIVITY,
 		vec3(1.0, -3.0, 0.0), vec3(0));
 
-LightObject Light;
+LightObject Light[8];
 
 using namespace std;
 
@@ -48,14 +49,16 @@ struct Material_Properties {
 
 void init_lights(GLuint program) {
 	LightInfo li;
+	int i;
+	char str[10];
 
 	li.values.ambient  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.specular = vec4(1.0, 1.0, 1.0, 1.0);
 
 	MatProp.shinyid = glGetUniformLocation(program, "shinyness");
-	MatProp.values.shinyness = 100;
-	MatProp.values.diff = vec4(1.0, 1.0, 1.0, 1.0);
+	MatProp.values.shinyness = 0;
+	MatProp.values.diff = vec4(0.0, 0.2, 0.0, 1.0);
 	MatProp.values.ambi = vec4(1.0, 1.0, 1.0, 1.0);
 	MatProp.values.spec = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -64,12 +67,17 @@ void init_lights(GLuint program) {
 	li.values.specular *= MatProp.values.spec;
 
 	li.isSpotLight = false;
-	cout << li.values.ambient << endl;
-	Light = LightObject("Light0", vec3(2.05, -7.3, -1.1), li);
+
+	for (i = 0; i < 8; i++) {
+		snprintf(str, 10, "Light%d", i);
+		Light[i] = LightObject(str, vec3(2.05, -7.3, -1.1), li);
+		Light[i].setLightIndex(0);
+	}
 }
 
 void init( void )
 {
+	int i;
 	//Fixes GlutMouseWarpPointer on Mac, thanks to John Huston and Chris Compton
 #ifdef __APPLE__
 	CGSetLocalEventsSuppressionInterval( 0.0 );
@@ -91,9 +99,10 @@ void init( void )
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 
-	init_lights(program);
-	Light.setLightIndex(0);
-	Light.bindLight(program);
+	for (i = 0; i < 8; i++) {
+		init_lights(program);
+		Light[i].bindLight(program);
+	}
 	 
 	camMatLoc = glGetUniformLocation( program, "modelview");
 	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
@@ -112,11 +121,12 @@ void init( void )
 
 	glEnable( GL_DEPTH_TEST );
 
-	glClearColor( 1.0, 1.0, 1.0, 1.0 ); /* white background */
+	glClearColor( 0.0, 0.0, 0.0, 1.0 ); /* white background */
 }
 
 void display( void )
 {
+	int i;
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	world.getActors()->at(0)->translate(vec3(0.0, 0.0, 0.1));
@@ -124,7 +134,9 @@ void display( void )
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
 	
-	Light.setValues();
+
+	for (i = 0; i < 8; i++) 
+		Light[i].setValues();
 	glUniform1f(MatProp.shinyid, MatProp.values.shinyness);
 
 	world.drawActors();

@@ -72,8 +72,8 @@ void main() {
 	//gl_FragColor = pcolor;	
 
 	// Uncomment this for no fragment lighting
-	//gl_FragColor = pcolor * texture2D(gSampler, texcoord);
+	gl_FragColor = pcolor * texture2D(gSampler, texcoord);
 
 	// Uncomment this for fragment lighting
-	gl_FragColor = pcolor * FragLight() * texture2D(gSampler, texcoord);
+	//gl_FragColor = pcolor * FragLight() * texture2D(gSampler, texcoord);
 }

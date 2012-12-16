@@ -16,7 +16,7 @@
 #include <ctime>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.05
+#define MOVEMENT_SPEED 0.1
 
 float delta;
 
@@ -77,10 +77,12 @@ void init( void )
 
 	// set up camera
 	camera.setLockedXRot(true);
+	camera.lockToPlane(-1.6);
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
 	OBJParser::load_obj("models/stations.obj", world);
+	OBJParser::load_obj("models/art.obj", world);
 
 	transformation = *new mat4();
 
@@ -95,12 +97,15 @@ void init( void )
 
 	world.getActors()->at(0)->generateBuffers();
 	world.getActors()->at(1)->generateBuffers();
+	world.getActors()->at(2)->generateBuffers();
 	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
 	world.getActors()->at(1)->loadTexture("img/stations.png");
+	world.getActors()->at(2)->loadTexture("img/art.png");
 	world.getActors()->at(0)->setRotation(vec3(0.0, 90.0, 0.0));
 	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -2.0));
 	world.getActors()->at(1)->setScale(vec3(0.4));
 	world.getActors()->at(0)->addChild(&camera);
+	world.getActors()->at(0)->addChild(world.getActors()->at(2));
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -111,7 +116,7 @@ void display( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -2.0 - delta / 2.0));
+	world.getActors()->at(0)->translate(vec3(0.0, 0.0, 0.1));
 
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
@@ -185,8 +190,10 @@ void passiveMotion(int x, int y)
 	// make sure we're not in the center
 	if (x != 255 || y != 255)
 	{
-		camera.addYRot(-(255 - x));
-		camera.addXRot(-(255 - y));
+		vec3 rotation(0);
+		rotation.x = -(255 - y);
+		rotation.y = -(255 - x);
+		camera.rotate(rotation);
 
 		glutWarpPointer(255, 255);
 	}

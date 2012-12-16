@@ -18,7 +18,7 @@ class SceneObject
 		SceneObject *parent;
 		vector<SceneObject*> children;
 
-		vec3 position, rotation, scale;
+		vec3 position, rotation, size;
 		
 		mat4 ctm; // current transformation matrix
 
@@ -35,6 +35,11 @@ class SceneObject
 		void setPosition(vec3 position);
 		void setRotation(vec3 rotation);
 		void setScale(vec3 scale);
+
+		// incremental modifiers for object attributes
+		virtual void translate(vec3 translation);
+		virtual void rotate(vec3 rotation);
+		virtual void scale(vec3 scale);
 
 		vec3 getPosition();
 		vec3 getRotation();

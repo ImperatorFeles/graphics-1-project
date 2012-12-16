@@ -7,6 +7,7 @@
 #include "World.h"
 #include "SOIL.h"
 #include "CameraObject.h"
+#include "Train.h"
 
 #include <iostream>
 #include <vector>
@@ -17,7 +18,7 @@
 #include <cstdio>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.1
+#define MOVEMENT_SPEED 0.02
 
 float delta;
 
@@ -29,9 +30,12 @@ GLuint perspectiveMatLoc;
 //Get the world ready
 World world = World();
 
+// train logic
+Train *train;
+
 // object that stores camera data
 CameraObject camera = CameraObject("cam1", MOVEMENT_SPEED, MOUSE_SENSITIVITY,
-		vec3(1.0, -3.0, 0.0), vec3(0));
+		vec3(-4.0, -3.0, 4.0), vec3(0.0, -90.0, 0.0));
 
 LightObject Light[8];
 
@@ -87,12 +91,13 @@ void init( void )
 
 	// set up camera
 	camera.setLockedXRot(true);
-	//camera.lockToPlane(-1.6);
+	camera.lockToPlane(-1.7);
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
 	OBJParser::load_obj("models/stations.obj", world);
-	OBJParser::load_obj("models/art.obj", world);
+	OBJParser::load_obj("models/cardoor.obj", world);
+	OBJParser::load_obj("models/cardoor.obj", world);
 
 	transformation = *new mat4();
 
@@ -110,14 +115,25 @@ void init( void )
 	world.getActors()->at(0)->generateBuffers();
 	world.getActors()->at(1)->generateBuffers();
 	world.getActors()->at(2)->generateBuffers();
+	world.getActors()->at(3)->generateBuffers();
 	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
 	world.getActors()->at(1)->loadTexture("img/stations.png");
-	world.getActors()->at(2)->loadTexture("img/art.png");
+	world.getActors()->at(2)->loadTexture("img/cardoor.png");
+	world.getActors()->at(3)->loadTexture("img/cardoor.png");
 	world.getActors()->at(0)->setRotation(vec3(0.0, 90.0, 0.0));
-	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -2.0));
+	world.getActors()->at(2)->setRotation(vec3(0.0, 90.0, 0.0));
+	world.getActors()->at(3)->setRotation(vec3(0.0, 90.0, 0.0));
+	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -5.5));
+
+	train = new Train(world.getActors()->at(0), world.getActors()->at(2), world.getActors()->at(3), &camera, 0.0002, 0.1, 600, 1050, -1.3);
+
+	world.getActors()->at(2)->setPosition(vec3(1.22, 1.3, 3.15));
+	world.getActors()->at(3)->setPosition(vec3(1.22, 1.3, -14.2));
+
+	world.getActors()->at(0)->translate(vec3(0.0, 0.0, 6.0));
+
+			
 	world.getActors()->at(1)->setScale(vec3(0.4));
-	world.getActors()->at(0)->addChild(&camera);
-	world.getActors()->at(0)->addChild(world.getActors()->at(2));
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -129,11 +145,8 @@ void display( void )
 	int i;
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	world.getActors()->at(0)->translate(vec3(0.0, 0.0, 0.1));
-
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
-	
 
 	for (i = 0; i < 8; i++) 
 		Light[i].setValues();
@@ -224,6 +237,7 @@ void motion(int x, int y)
 void idle()
 {
 	camera.update();
+	train->update();
 
 	delta += 0.2;
 

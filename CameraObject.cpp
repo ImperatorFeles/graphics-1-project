@@ -37,11 +37,11 @@ void CameraObject::update()
 		velocity.z = 0;
 	}
 
-	if (up)
+	if (up && !planarLock)
 	{
 		velocity.y = -moveSpeed;
 	}
-	else if (down)
+	else if (down && !planarLock)
 	{
 		velocity.y = moveSpeed;
 	}
@@ -97,40 +97,39 @@ void CameraObject::setMoveRight(bool right)
 	this->right = right;
 }
 
-void CameraObject::addXRot(float theta)
+void CameraObject::translate(vec3 translation)
 {
-	if ((xRotLock && rotation.x + theta * rotSpeed < -90) ||
-			(xRotLock && rotation.x + theta * rotSpeed > 90))
-	{
-		return;
-	}
+	position.x += translation.x;
+	position.y += translation.y;
+	position.z -= translation.z;
 
-	rotation.x += theta * rotSpeed;
-	
-	if (rotation.x > 360)
+	// tell children to update their position 
+	for (vector<SceneObject*>::iterator iter = children.begin();
+			iter != children.end(); ++iter)
 	{
-		rotation.x -= 360;
+		(*iter)->translate(translation);
+		(*iter)->createMatrix();
 	}
 }
 
-void CameraObject::addYRot(float theta)
+void CameraObject::rotate(vec3 rotation)
 {
-	rotation.y += theta * rotSpeed;
-
-	if (rotation.y > 360)
+	// lock the camera's up and down movement if we have to
+	if ((xRotLock && this->rotation.x + rotation.x * rotSpeed < -90) ||
+			(xRotLock && this->rotation.x + rotation.x * rotSpeed > 90))
 	{
-		rotation.y -= 360;
+		rotation.x = 0;
 	}
-}
 
-void CameraObject::addZRot(float theta)
-{
-	rotation.z += theta * rotSpeed;
+	this->rotation = this->rotation + rotation * rotSpeed;
 
-	if (rotation.z > 360)
+	// tell children to update their position 
+	for (vector<SceneObject*>::iterator iter = children.begin();
+			iter != children.end(); ++iter)
 	{
-		rotation.z -= 360;
-	}
+		(*iter)->rotate(rotation);
+		(*iter)->createMatrix();
+	}	
 }
 
 void CameraObject::setLockedXRot(bool lock)
@@ -138,20 +137,47 @@ void CameraObject::setLockedXRot(bool lock)
 	xRotLock = lock;
 }
 
+void CameraObject::lockToPlane(float height)
+{
+	planarLock = true;
+	position.y = plane = height;
+}
+
+void CameraObject::unlockPlane()
+{
+	planarLock = false;
+}
+
 void CameraObject::createMatrix()
 {
+	ctm = Angel::identity();
+
+	vec4 tempPos = vec4(position, 1);
+
 	// update position based on rotation
 	mat4 tempMat = Angel::identity();
-	vec4 tempPos = vec4(position, 1);
-	tempMat = tempMat * RotateY(-rotation.y) * RotateX(-rotation.x);
+	if (planarLock)
+	{
+		tempMat = tempMat * RotateY(-rotation.y);
+	}
+	else
+	{
+		tempMat = tempMat * RotateY(-rotation.y) * RotateX(-rotation.x);
+	}
 	tempPos = tempPos + tempMat * velocity;
 	position.x = tempPos.x;
 	position.y = tempPos.y;
 	position.z = tempPos.z;
 
 	// update matrix as usual
-	ctm = Angel::identity();
 	ctm = ctm * RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z);
-	ctm = ctm * Translate(position);
+	ctm = ctm * Translate(tempPos.x, tempPos.y, tempPos.z);
 
+
+	// tell children to update their matrices
+	for (vector<SceneObject*>::iterator iter = children.begin();
+			iter != children.end(); ++iter)
+	{
+		(*iter)->createMatrix();
+	}
 }

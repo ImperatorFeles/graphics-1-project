@@ -7,9 +7,11 @@ class CameraObject : public SceneObject
 {
 	private:
 		bool forward, backward, up, down, left, right;
-		bool xRotLock;
+		bool xRotLock, planarLock; // lock x rotation up and down,
+								   // and lock movement to a plane
 		float moveSpeed, rotSpeed;
 		vec3 velocity;
+		float plane; // horizontal plane to lock to
 
 	public:
 		CameraObject(string objName, float moveSpeed, float rotSpeed);
@@ -27,13 +29,15 @@ class CameraObject : public SceneObject
 		void setMoveLeft(bool left);
 		void setMoveRight(bool right);
 
-		// methods for updating rotation
-		void addXRot(float theta);
-		void addYRot(float theta);
-		void addZRot(float theta);
+		void translate(vec3 translation);
+		void rotate(vec3 rotation);
 
 		// flag for locking the x rotation to 90<->-90
 		void setLockedXRot(bool lock);
+
+		// lock camera to a specific height
+		void lockToPlane(float height);
+		void unlockPlane();
 
 	protected:
 

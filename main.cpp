@@ -16,7 +16,7 @@
 #include <ctime>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.05
+#define MOVEMENT_SPEED 0.1
 
 float delta;
 
@@ -30,7 +30,7 @@ World world = World();
 
 // object that stores camera data
 CameraObject camera = CameraObject("cam1", MOVEMENT_SPEED, MOUSE_SENSITIVITY,
-		vec3(0.0, 0.0, -5.0), vec3(0));
+		vec3(1.0, -3.0, 0.0), vec3(0));
 
 LightObject Light;
 
@@ -79,11 +79,12 @@ void init( void )
 
 	// set up camera
 	camera.setLockedXRot(true);
+	camera.lockToPlane(-1.6);
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
-	OBJParser::load_obj("models/art.obj", world);
 	OBJParser::load_obj("models/stations.obj", world);
+	OBJParser::load_obj("models/art.obj", world);
 
 	transformation = *new mat4();
 
@@ -101,9 +102,13 @@ void init( void )
 	world.getActors()->at(1)->generateBuffers();
 	world.getActors()->at(2)->generateBuffers();
 	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
-	world.getActors()->at(1)->loadTexture("img/art.png");
-	world.getActors()->at(2)->loadTexture("img/stations.png");
-	//world.getActors()->at(0)->addChild(&(world.getActors()->at(1)));
+	world.getActors()->at(1)->loadTexture("img/stations.png");
+	world.getActors()->at(2)->loadTexture("img/art.png");
+	world.getActors()->at(0)->setRotation(vec3(0.0, 90.0, 0.0));
+	world.getActors()->at(0)->setPosition(vec3(-0.3, 1.3, -2.0));
+	world.getActors()->at(1)->setScale(vec3(0.4));
+	world.getActors()->at(0)->addChild(&camera);
+	world.getActors()->at(0)->addChild(world.getActors()->at(2));
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -114,13 +119,13 @@ void display( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+	world.getActors()->at(0)->translate(vec3(0.0, 0.0, 0.1));
+
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
 	
 	Light.setValues();
 	glUniform1f(MatProp.shinyid, MatProp.values.shinyness);
-
-
 
 	world.drawActors();
 
@@ -132,6 +137,9 @@ void keyboard( unsigned char key, int x, int y )
 	switch ( key ) {
 		case 033: case 'q': case 'Q':
 			exit( EXIT_SUCCESS );
+			break;
+		case 'l':
+			camera.removeParent();
 			break;
 		case 'w':
 			camera.setMoveForward(true);
@@ -185,8 +193,10 @@ void passiveMotion(int x, int y)
 	// make sure we're not in the center
 	if (x != 255 || y != 255)
 	{
-		camera.addYRot(-(255 - x));
-		camera.addXRot(-(255 - y));
+		vec3 rotation(0);
+		rotation.x = -(255 - y);
+		rotation.y = -(255 - x);
+		camera.rotate(rotation);
 
 		glutWarpPointer(255, 255);
 	}

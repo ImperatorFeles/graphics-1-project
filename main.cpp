@@ -49,15 +49,15 @@ struct Material_Properties {
 void init_lights(GLuint program) {
 	LightInfo li;
 
-	li.values.ambient  = vec4(0.2, 0.2, 0.3, 1.0);
+	li.values.ambient  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
-	li.values.specular = vec4(1.0, 0.8, 1.0, 1.0);
+	li.values.specular = vec4(1.0, 1.0, 1.0, 1.0);
 
 	MatProp.shinyid = glGetUniformLocation(program, "shinyness");
 	MatProp.values.shinyness = 100;
-	MatProp.values.diff = vec4(1.0, 0.0, 1.0, 1.0);
-	MatProp.values.ambi = vec4(1.0, 0.0, 0.0, 1.0);
-	MatProp.values.spec = vec4(1.0, 0.8, 0.0, 1.0);
+	MatProp.values.diff = vec4(1.0, 1.0, 1.0, 1.0);
+	MatProp.values.ambi = vec4(1.0, 1.0, 1.0, 1.0);
+	MatProp.values.spec = vec4(0.0, 0.0, 0.0, 1.0);
 
 	li.values.ambient  *= MatProp.values.ambi;
 	li.values.diffuse  *= MatProp.values.diff;
@@ -65,7 +65,7 @@ void init_lights(GLuint program) {
 
 	li.isSpotLight = false;
 	cout << li.values.ambient << endl;
-	Light = LightObject("Light0", vec3(15.0, 0.0, 0.0), li);
+	Light = LightObject("Light0", vec3(2.05, -7.3, -1.1), li);
 }
 
 void init( void )
@@ -79,7 +79,7 @@ void init( void )
 
 	// set up camera
 	camera.setLockedXRot(true);
-	camera.lockToPlane(-1.6);
+	//camera.lockToPlane(-1.6);
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
@@ -183,6 +183,9 @@ void keyboardUp(unsigned char key, int x, int y)
 			break;
 		case 'f':
 			camera.setMoveDown(false);
+			break;
+		case 'p':
+			cout << camera.getPosition();
 			break;
 	}
 }

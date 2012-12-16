@@ -95,6 +95,4 @@ void main() {
 
 	texcoord = vTexture;
    	gl_Position = perspective * modelview * modeltransform * vPosition;
-
-
 }

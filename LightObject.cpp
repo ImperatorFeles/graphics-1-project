@@ -11,7 +11,6 @@ LightObject::LightObject() :
 LightObject::LightObject(string objName, vec3 position, LightInfo info) :
 	SceneObject(objName, position),
 	info(info) {
-
 	// Nothing			
 }
 
@@ -47,6 +46,7 @@ void LightObject::bindLight(GLint program) {
 }
 
 void LightObject::setValues() {
+	
 	glUniform4fv(info.ids.ambient_id, 1, info.values.ambient);
 	glUniform4fv(info.ids.diffuse_id, 1, info.values.diffuse);
 	glUniform4fv(info.ids.specular_id, 1, info.values.specular);

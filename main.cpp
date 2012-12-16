@@ -63,6 +63,8 @@ void init_lights(GLuint program) {
 	li.values.diffuse  *= MatProp.values.diff;
 	li.values.specular *= MatProp.values.spec;
 
+	li.isSpotLight = false;
+	cout << li.values.ambient << endl;
 	Light = LightObject("Light0", vec3(15.0, 0.0, 0.0), li);
 }
 
@@ -88,6 +90,7 @@ void init( void )
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 
+	init_lights(program);
 	Light.setLightIndex(0);
 	Light.bindLight(program);
 	 

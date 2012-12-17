@@ -62,7 +62,7 @@ void init_lights(GLuint program) {
 	vals[0] = vec3(-16.5, -8.0, 9.4);
 	vals[1] = vec3(-16.5, -7.0, -9.4);
 	vals[2] = vec3(.43, -8.9, -.7);
-	vals[3] = vec3(., -3.1, -3.3);
+	vals[3] = vec3(.6, -3.1, -3.3);
 
 	li.values.ambient  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);

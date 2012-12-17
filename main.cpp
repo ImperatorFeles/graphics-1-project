@@ -21,7 +21,7 @@
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.02
 
-#define NUM_LIGHTS 1
+#define NUM_LIGHTS 3
 
 float delta;
 
@@ -58,6 +58,10 @@ void init_lights(GLuint program) {
 	LightInfo li;
 	int i;
 	char str[10];
+	vec3 vals[NUM_LIGHTS];
+	vals[0] = vec3(-16.5, -8.0, 9.4);
+	vals[1] = vec3(-16.5, -7.0, -9.4);
+	vals[2] = vec3(.43, -8.9, -.7);
 
 	li.values.ambient  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
@@ -75,9 +79,10 @@ void init_lights(GLuint program) {
 
 	li.isSpotLight = false;
 
+	
 	for (i = 0; i < NUM_LIGHTS; i++) {
 		snprintf(str, 10, "Light%d", i);
-		Light[i] = LightObject(str, vec3(-16.7, -8.1, 9.2), li);
+		Light[i] = LightObject(str, vals[i], li);
 		Light[i].setLightIndex(i);
 	}
 }

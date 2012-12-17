@@ -6,7 +6,7 @@ World::World()
 void World::bufferActors()
 {
   int index = 0;
-  GLuint* vaos;
+  GLuint vaos[actors.size()];
 
   glGenVertexArrays( actors.size(), vaos );
 

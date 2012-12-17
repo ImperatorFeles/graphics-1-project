@@ -16,9 +16,12 @@
 #include <string>
 #include <ctime>
 #include <cstdio>
+#include <cstdlib> // TODO: Delete
 
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.02
+
+#define NUM_LIGHTS 1
 
 float delta;
 
@@ -47,7 +50,7 @@ struct Material_Properties {
 		vec4 diff,
 			 ambi,
 			 spec;
-		GLfloat shinyness;
+		GLfloat shininess;
 	} values;
 } MatProp;
 
@@ -60,11 +63,11 @@ void init_lights(GLuint program) {
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.specular = vec4(1.0, 1.0, 1.0, 1.0);
 
-	MatProp.shinyid = glGetUniformLocation(program, "shinyness");
-	MatProp.values.shinyness = 0;
-	MatProp.values.diff = vec4(0.0, 0.2, 0.0, 1.0);
-	MatProp.values.ambi = vec4(1.0, 1.0, 1.0, 1.0);
-	MatProp.values.spec = vec4(0.0, 0.0, 0.0, 1.0);
+	MatProp.shinyid = glGetUniformLocation(program, "shininess");
+	MatProp.values.shininess = 1;
+	MatProp.values.ambi = vec4(0.85, 0.85, 0.85, 1.0);
+	MatProp.values.diff = vec4(1.0, 1.0, 1.0, 5);
+	MatProp.values.spec = vec4(0.1, 0.1, 0.1, 1.0);
 
 	li.values.ambient  *= MatProp.values.ambi;
 	li.values.diffuse  *= MatProp.values.diff;
@@ -72,10 +75,10 @@ void init_lights(GLuint program) {
 
 	li.isSpotLight = false;
 
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < NUM_LIGHTS; i++) {
 		snprintf(str, 10, "Light%d", i);
-		Light[i] = LightObject(str, vec3(2.05, -7.3, -1.1), li);
-		Light[i].setLightIndex(0);
+		Light[i] = LightObject(str, vec3(-16.7, -8.1, 9.2), li);
+		Light[i].setLightIndex(i);
 	}
 }
 
@@ -92,6 +95,7 @@ void init( void )
 	// set up camera
 	camera.setLockedXRot(true);
 	camera.lockToPlane(-1.7);
+	camera.addChild(&Light[0]);
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
@@ -104,7 +108,7 @@ void init( void )
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < NUM_LIGHTS; i++) {
 		init_lights(program);
 		Light[i].bindLight(program);
 	}
@@ -148,9 +152,9 @@ void display( void )
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
 
-	for (i = 0; i < 8; i++) 
+	for (i = 0; i < NUM_LIGHTS; i++) 
 		Light[i].setValues();
-	glUniform1f(MatProp.shinyid, MatProp.values.shinyness);
+	glUniform1f(MatProp.shinyid, MatProp.values.shininess);
 
 	world.drawActors();
 
@@ -165,6 +169,7 @@ void keyboard( unsigned char key, int x, int y )
 			break;
 		case 'l':
 			camera.removeParent();
+			camera.unlockPlane();
 			break;
 		case 'w':
 			camera.setMoveForward(true);
@@ -183,6 +188,19 @@ void keyboard( unsigned char key, int x, int y )
 			break;
 		case 'f':
 			camera.setMoveDown(true);
+			break;
+		case '1': case '2': case '3':
+		case '4': case '5': case '6':
+		case '7': case '8':
+			Light[0].incAmbientValue(key - '0');
+			break;
+		case '9':
+			MatProp.values.shininess += .05; 
+			cout << MatProp.values.shininess << endl;
+			break;
+		case '0': 
+			MatProp.values.shininess -= .05; 
+			cout << MatProp.values.shininess << endl;
 			break;
 	}
 }
@@ -209,8 +227,9 @@ void keyboardUp(unsigned char key, int x, int y)
 		case 'f':
 			camera.setMoveDown(false);
 			break;
-		case 'p':
-			cout << camera.getPosition();
+		case 'p': case 'P':
+			cerr << camera.getPosition() << endl;
+			cerr << Light[0].getValue() << endl;
 			break;
 	}
 }

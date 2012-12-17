@@ -17,6 +17,7 @@ struct LightSource {
 };
 uniform LightSource Lights[MaxLights];
 
+/* TODO: For Future
 struct MaterialProperties {
 	vec4 ambient;
 	vec4 diffuse;
@@ -24,6 +25,7 @@ struct MaterialProperties {
 	float shininess;
 };
 uniform MaterialProperties Material;
+*/
 
 // Inputs from models buffer
 attribute vec4 vPosition;

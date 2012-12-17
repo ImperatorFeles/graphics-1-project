@@ -7,10 +7,13 @@
 #include <vector>
 #include <cstring>
 #include <cstdio>
+#include <iostream> // TODO: Delete
+using std::cout; using std::endl;
 
 using std::vector;
 using std::memset;
 using std::snprintf;
+
 
 class LightObject;
 
@@ -54,9 +57,23 @@ public:
 	LightObject();
 	LightObject(string objName, vec3 position, LightInfo info);
 
+	void incAmbientValue(int num) {
+		if (num == 1) info.values.diffuse += vec4(0.05, 0.0, 0.0, 0.0);
+		if (num == 5) info.values.diffuse += vec4(-0.05, 0.0, 0.0, 0.0);
+		if (num == 2) info.values.diffuse += vec4(0.0, 0.05, 0.0, 0.0);
+		if (num == 6) info.values.diffuse += vec4(0.0, -0.05, 0.0, 0.0);
+		if (num == 3) info.values.diffuse += vec4(0.0, 0.0, 0.05, 0.0);
+		if (num == 7) info.values.diffuse += vec4(0.0, 0.0, -0.05, 0.0);
+		if (num == 4) info.values.diffuse += vec4(0.0, 0.0, 0.0, 0.05);
+		if (num == 8) info.values.diffuse += vec4(0.0, 0.0, 0.0, -0.05);
+		cout <<       info.values.diffuse << endl;
+	}
+	vec4 getValue() { return info.values.specular; }
 	void setLightIndex(GLint index);
 	void bindLight(GLint program);
 	void setValues();
+
+	void translate(vec3 translation);
 
 };
 

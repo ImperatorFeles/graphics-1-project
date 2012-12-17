@@ -17,6 +17,7 @@ struct LightSource {
 };
 uniform LightSource Lights[MaxLights];
 
+/* TODO: For future.
 struct MaterialProperties {
 	vec4 ambient;
 	vec4 diffuse;
@@ -24,6 +25,7 @@ struct MaterialProperties {
 	float shininess;
 };
 uniform MaterialProperties Material;
+*/
 
 varying vec4 pcolor;
 varying vec2 texcoord;
@@ -72,8 +74,8 @@ void main() {
 	//gl_FragColor = pcolor;	
 
 	// Uncomment this for no fragment lighting
-	gl_FragColor = pcolor * texture2D(gSampler, texcoord);
+	//gl_FragColor = pcolor * texture2D(gSampler, texcoord);
 
 	// Uncomment this for fragment lighting
-	//gl_FragColor = pcolor * FragLight() * texture2D(gSampler, texcoord);
+	gl_FragColor = pcolor * FragLight() * texture2D(gSampler, texcoord);
 }

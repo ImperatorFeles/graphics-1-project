@@ -55,3 +55,11 @@ void LightObject::setValues() {
 	// TODO: Add more bindings
 }
 
+void LightObject::translate(vec3 translation) {
+	SceneObject::translate(translation);
+
+	position.x += translation.x;
+	position.y += translation.y;
+	position.z += translation.z;
+}
+

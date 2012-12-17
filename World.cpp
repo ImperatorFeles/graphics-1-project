@@ -3,6 +3,20 @@
 World::World()
 {
 }
+void World::bufferActors()
+{
+  int index = 0;
+  GLuint* vaos;
+
+  glGenVertexArrays( actors.size(), vaos );
+
+  vector<ModelObject*>::iterator iter;
+  for( iter = actors.begin(); iter != actors.end(); iter++ ) {
+    actors.at(index)->setVao( vaos[index] );
+    index++;
+    (*iter)->generateBuffers();
+  }
+}
 void World::drawActors()
 {
   vector<ModelObject*>::iterator iter;

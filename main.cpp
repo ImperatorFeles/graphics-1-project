@@ -16,7 +16,6 @@
 #include <string>
 #include <ctime>
 #include <cstdio>
-#include <cstdlib> // TODO: Delete
 
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.02
@@ -62,7 +61,8 @@ void init_lights(GLuint program) {
 	vals[0] = vec3(-16.5, -8.0, 9.4);
 	vals[1] = vec3(-16.5, -7.0, -9.4);
 	vals[2] = vec3(.43, -8.9, -.7);
-	vals[3] = vec3(.6, -3.1, -3.3);
+	vals[3] = vec3(.6, 1.0, -3.3);
+	//vals[4] = vec3(-9.1, -4.2, -45);
 
 	li.values.ambient  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
@@ -70,9 +70,9 @@ void init_lights(GLuint program) {
 
 	MatProp.shinyid = glGetUniformLocation(program, "shininess");
 	MatProp.values.shininess = 1;
-	MatProp.values.ambi = vec4(0.85, 0.85, 0.85, 1.0);
-	MatProp.values.diff = vec4(1.0, 1.0, 1.0, 1.0);
-	MatProp.values.spec = vec4(0.1, 0.1, 0.1, 1.0);
+	MatProp.values.ambi = vec4(0.75, 0.75, 0.75, 1.0);
+	MatProp.values.diff = vec4(0.5, 0.5, 0.5, 1.0);
+	MatProp.values.spec = vec4(0.03, 0.03, 0.03, 1.0);
 
 	li.values.ambient  *= MatProp.values.ambi;
 	li.values.diffuse  *= MatProp.values.diff;
@@ -85,7 +85,7 @@ void init_lights(GLuint program) {
 		snprintf(str, 10, "Light%d", i);
 		Light[i] = LightObject(str, vals[i], li);
 		Light[i].setLightIndex(i);
-		Light[i].disable();
+		Light[i].enable();
 	}
 	Light[3].enable();
 	world.getActors()->at(0)->addChild(&Light[3]);
@@ -104,7 +104,6 @@ void init( void )
 	// set up camera
 	camera.setLockedXRot(true);
 	camera.lockToPlane(-1.7);
-	camera.addChild(&Light[0]);
 
 	// load objects
 	OBJParser::load_obj("models/subwaycar-done.obj", world);
@@ -158,8 +157,9 @@ void display( void )
 	glUniformMatrix4fv(perspectiveMatLoc, 1, true, Perspective(60, 1.0, 0.01, 100));
 	glUniformMatrix4fv( camMatLoc, 1, true, camera.getTransformationMatrix() );
 
-	for (i = 0; i < NUM_LIGHTS; i++) 
+	for (i = 0; i < NUM_LIGHTS; i++) {
 		Light[i].setValues();
+	}
 	glUniform1f(MatProp.shinyid, MatProp.values.shininess);
 
 	world.drawActors();
@@ -195,19 +195,6 @@ void keyboard( unsigned char key, int x, int y )
 		case 'f':
 			camera.setMoveDown(true);
 			break;
-		case '1': case '2': case '3':
-		case '4': case '5': case '6':
-		case '7': case '8':
-			Light[0].incAmbientValue(key - '0');
-			break;
-		case '9':
-			MatProp.values.shininess += .05; 
-			cout << MatProp.values.shininess << endl;
-			break;
-		case '0': 
-			MatProp.values.shininess -= .05; 
-			cout << MatProp.values.shininess << endl;
-			break;
 	}
 }
 
@@ -235,7 +222,6 @@ void keyboardUp(unsigned char key, int x, int y)
 			break;
 		case 'p': case 'P':
 			cerr << camera.getPosition() << endl;
-			cerr << Light[0].getValue() << endl;
 			break;
 	}
 }

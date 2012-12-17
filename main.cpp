@@ -121,10 +121,7 @@ void init( void )
 	camMatLoc = glGetUniformLocation( program, "modelview");
 	perspectiveMatLoc = glGetUniformLocation(program, "perspective");
 
-	world.getActors()->at(0)->generateBuffers();
-	world.getActors()->at(1)->generateBuffers();
-	world.getActors()->at(2)->generateBuffers();
-	world.getActors()->at(3)->generateBuffers();
+	world.bufferActors();
 	world.getActors()->at(0)->loadTexture("img/subwaycar.png");
 	world.getActors()->at(1)->loadTexture("img/stations.png");
 	world.getActors()->at(2)->loadTexture("img/cardoor.png");

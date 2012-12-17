@@ -34,6 +34,8 @@ class ModelObject : public SceneObject
 		void generateBuffers();
 		void draw();
 		void loadTexture(string filename);
+
+		void setVao( GLuint vao );
 };
 
 #endif

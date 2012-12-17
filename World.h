@@ -14,6 +14,7 @@ class World
  public:
   World();
   void drawActors();
+  void bufferActors();
   vector<ModelObject*>* getActors();
   void addActor( ModelObject *newActor );
 

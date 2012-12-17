@@ -49,8 +49,6 @@ void ModelObject::generateBuffers()
 	GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 	glUseProgram( program );
 
-	//Create VAO
-	glGenVertexArrays( 1, &vao );
 	glBindVertexArray( vao );
 
 	//Create VBOs
@@ -118,4 +116,9 @@ void ModelObject::loadTexture(string filename)
 		cout << "Failed to load texture file: " << filename << endl;
 		exit(0);
 	}
+}
+
+void ModelObject::setVao( GLuint vao ) 
+{
+  this->vao = vao;
 }

@@ -21,7 +21,7 @@
 #define MOUSE_SENSITIVITY 0.1
 #define MOVEMENT_SPEED 0.02
 
-#define NUM_LIGHTS 3
+#define NUM_LIGHTS 4
 
 float delta;
 
@@ -62,6 +62,7 @@ void init_lights(GLuint program) {
 	vals[0] = vec3(-16.5, -8.0, 9.4);
 	vals[1] = vec3(-16.5, -7.0, -9.4);
 	vals[2] = vec3(.43, -8.9, -.7);
+	vals[3] = vec3(., -3.1, -3.3);
 
 	li.values.ambient  = vec4(1.0, 1.0, 1.0, 1.0);
 	li.values.diffuse  = vec4(1.0, 1.0, 1.0, 1.0);
@@ -70,7 +71,7 @@ void init_lights(GLuint program) {
 	MatProp.shinyid = glGetUniformLocation(program, "shininess");
 	MatProp.values.shininess = 1;
 	MatProp.values.ambi = vec4(0.85, 0.85, 0.85, 1.0);
-	MatProp.values.diff = vec4(1.0, 1.0, 1.0, 5);
+	MatProp.values.diff = vec4(1.0, 1.0, 1.0, 1.0);
 	MatProp.values.spec = vec4(0.1, 0.1, 0.1, 1.0);
 
 	li.values.ambient  *= MatProp.values.ambi;
@@ -84,7 +85,10 @@ void init_lights(GLuint program) {
 		snprintf(str, 10, "Light%d", i);
 		Light[i] = LightObject(str, vals[i], li);
 		Light[i].setLightIndex(i);
+		Light[i].disable();
 	}
+	Light[3].enable();
+	world.getActors()->at(0)->addChild(&Light[3]);
 }
 
 void init( void )

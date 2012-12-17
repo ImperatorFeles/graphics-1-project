@@ -46,20 +46,32 @@ void LightObject::bindLight(GLint program) {
 }
 
 void LightObject::setValues() {
-	
-	glUniform4fv(info.ids.ambient_id, 1, info.values.ambient);
-	glUniform4fv(info.ids.diffuse_id, 1, info.values.diffuse);
-	glUniform4fv(info.ids.specular_id, 1, info.values.specular);
-	glUniform3fv(info.ids.position_id, 1, SceneObject::position);
+	if (info.enabled) {	
+		glUniform4fv(info.ids.ambient_id, 1, info.values.ambient);
+		glUniform4fv(info.ids.diffuse_id, 1, info.values.diffuse);
+		glUniform4fv(info.ids.specular_id, 1, info.values.specular);
+		glUniform3fv(info.ids.position_id, 1, SceneObject::position);
 
-	// TODO: Add more bindings
+		// TODO: Add more bindings
+	}
 }
 
 void LightObject::translate(vec3 translation) {
 	SceneObject::translate(translation);
 
+	/*
 	position.x += translation.x;
 	position.y += translation.y;
 	position.z += translation.z;
+	*/
 }
+
+void LightObject::disable() { 
+	info.enabled = false;
+}
+
+void LightObject::enable() {
+	info.enabled = true;
+}
+
 

@@ -23,6 +23,7 @@ vector<LightObject> getNearestLights(vector<LightObject> &lights, vec3 position)
 struct LightInfo {
 	GLint lightIndex;
 	bool isSpotLight;
+	bool enabled;
 	
 	struct {
 		GLint ambient_id,
@@ -72,6 +73,8 @@ public:
 	void setLightIndex(GLint index);
 	void bindLight(GLint program);
 	void setValues();
+	void disable();
+	void enable();
 
 	void translate(vec3 translation);
 

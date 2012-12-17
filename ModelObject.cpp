@@ -87,13 +87,13 @@ void ModelObject::generateBuffers()
 	matLoc = glGetUniformLocation(program, "modeltransform");
 	samplerLoc = glGetUniformLocation(program, "gSampler");
 	
-	glBindVertexArray(0);
+        glBindVertexArray( 0 );
 }
 
 void ModelObject::draw()
-{
-  glBindVertexArray(vao);
-  
+{ 
+  glBindVertexArray( vao );
+
   glBindTexture(GL_TEXTURE_2D, texture);
   
   glUniformMatrix4fv( matLoc, 1, true, getTransformationMatrix() );
@@ -101,7 +101,7 @@ void ModelObject::draw()
   
   glDrawArrays( GL_TRIANGLES, 0, vertices.size() );
   
-  glBindVertexArray(0);
+  glBindVertexArray( 0 );
 }
 
 void ModelObject::loadTexture(string filename)

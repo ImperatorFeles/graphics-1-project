@@ -18,7 +18,7 @@
 #include <cstdio>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.02
+#define MOVEMENT_SPEED 0.03
 
 #define NUM_LIGHTS 4
 
@@ -70,7 +70,7 @@ void init_lights(GLuint program) {
 
 	MatProp.shinyid = glGetUniformLocation(program, "shininess");
 	MatProp.values.shininess = 1;
-	MatProp.values.ambi = vec4(0.75, 0.75, 0.75, 1.0);
+	MatProp.values.ambi = vec4(0.5, 0.5, 0.5, 1.0);
 	MatProp.values.diff = vec4(0.5, 0.5, 0.5, 1.0);
 	MatProp.values.spec = vec4(0.03, 0.03, 0.03, 1.0);
 
@@ -110,6 +110,9 @@ void init( void )
 	OBJParser::load_obj("models/stations.obj", world);
 	OBJParser::load_obj("models/cardoor.obj", world);
 	OBJParser::load_obj("models/cardoor.obj", world);
+	OBJParser::load_obj("models/monkeyrobot-sit.obj", world);
+	OBJParser::load_obj("models/monkeyrobot-stand.obj", world);
+	OBJParser::load_obj("models/monkeyrobot-stand.obj", world);
 
 	transformation = *new mat4();
 
@@ -129,6 +132,20 @@ void init( void )
 	world.getActors()->at(1)->loadTexture("img/stations.png");
 	world.getActors()->at(2)->loadTexture("img/cardoor.png");
 	world.getActors()->at(3)->loadTexture("img/cardoor.png");
+	world.getActors()->at(4)->loadTexture("img/monkeyrobot.png");
+	world.getActors()->at(5)->loadTexture("img/monkeyrobot.png");
+	world.getActors()->at(6)->loadTexture("img/monkeyrobot.png");
+
+	world.getActors()->at(4)->setPosition(vec3(-0.75, 0.0, -0.9));
+	world.getActors()->at(5)->setPosition(vec3(25.0, 9.2, 44.0));
+	world.getActors()->at(5)->setScale(vec3(3.0));
+	world.getActors()->at(5)->setRotation(vec3(0.0, -90.0, 0.0));
+	world.getActors()->at(6)->setPosition(vec3(7.9, 1.1, 71.38));
+	world.getActors()->at(6)->setRotation(vec3(0.0, 220.0, 0.0));
+	world.getActors()->at(6)->setScale(vec3(0.7));
+
+	world.getActors()->at(0)->addChild(world.getActors()->at(4));
+
 	world.getActors()->at(0)->setRotation(vec3(0.0, 90.0, 0.0));
 	world.getActors()->at(2)->setRotation(vec3(0.0, 90.0, 0.0));
 	world.getActors()->at(3)->setRotation(vec3(0.0, 90.0, 0.0));
@@ -140,7 +157,6 @@ void init( void )
 	world.getActors()->at(3)->setPosition(vec3(1.22, 1.3, -14.2));
 
 	world.getActors()->at(0)->translate(vec3(0.0, 0.0, 6.0));
-
 			
 	world.getActors()->at(1)->setScale(vec3(0.4));
 

@@ -18,7 +18,7 @@
 #include <cstdio>
 
 #define MOUSE_SENSITIVITY 0.1
-#define MOVEMENT_SPEED 0.03
+#define MOVEMENT_SPEED 0.03 * 6
 
 #define NUM_LIGHTS 4
 

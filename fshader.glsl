@@ -1,10 +1,11 @@
-#define MaxLights 8
+#define MaxLights 4
 
 struct LightSource {
 	vec4  ambient;
 	vec4  diffuse;	
 	vec4  specular;
 	vec3  position;
+	/*
 	vec4  halfVector;
 	vec3  spotDirection;
 	float spotExponent;
@@ -14,6 +15,7 @@ struct LightSource {
 	float constantAttenuation;
 	float linearAttenbuation;
 	float quadraticAttenuation;
+	*/
 };
 uniform LightSource Lights[MaxLights];
 

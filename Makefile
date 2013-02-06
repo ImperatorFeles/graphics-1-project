@@ -1,4 +1,4 @@
-GL_FLAGS=-lSOIL -lGL -lGLU -lglut -lGLEW
+GL_FLAGS=-lSOIL -lGL -lGLU -lglut #-lGLEW
 MAC_FLAGS=-framework OpenGL -framework Glut -framework Carbon -lSOILMac
 C_FLAGS=-g -Wall
 DEPS=
